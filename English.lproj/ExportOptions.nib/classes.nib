@@ -1,0 +1,21 @@
+{
+    IBClasses = (
+        {
+            ACTIONS = {cancelAction = id; chooseDirectory = id; okAction = id; }; 
+            CLASS = ExportOptionsController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                cancelButton = NSButton; 
+                mAddKeyword = NSButton; 
+                mExportDirectory = NSTextField; 
+                mImportInAperture = NSButton; 
+                mKeywordField = NSTextField; 
+                mstackWithOriginal = NSButton; 
+                okButton = NSButton; 
+            }; 
+            SUPERCLASS = NSWindowController; 
+        }, 
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }
+    ); 
+    IBVersion = 1; 
+}
