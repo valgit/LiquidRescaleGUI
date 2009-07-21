@@ -1,0 +1,101 @@
+
+// in awakefrom nib ?
+
+NSNumber	*   doCheck = [[NSUserDefaults standardUserDefaults] objectForKey: @"UKUpdateChecker:CheckAtStartup"];
+	NSString	*   appName = [[NSFileManager defaultManager] displayNameAtPath: [[NSBundle mainBundle] bundlePath]]; 
+	NSNumber	*   lastCheckDateNum = [[NSUserDefaults standardUserDefaults] objectForKey: @"UKUpdateChecker:LastCheckDate"];
+	NSDate		*   lastCheckDate = nil;
+	
+	if( doCheck == nil )		// No setting in prefs yet? First launch! Ask!
+	{
+		if( NSRunAlertPanel( NSLocalizedStringFromTable(@"CHECK_FOR_UPDATES_TITLE", @"UKUpdateChecker", @"Asking whether to check for updates at startup - dialog title"),
+							NSLocalizedStringFromTable(@"CHECK_FOR_UPDATES_TEXT", @"UKUpdateChecker", @"Asking whether to check for updates at startup - dialog text"),
+							NSLocalizedString(@"Yes",nil), NSLocalizedString(@"No",nil), nil, appName ) == NSAlertDefaultReturn )
+			doCheck = [NSNumber numberWithBool:YES];
+		else
+			doCheck = [NSNumber numberWithBool:NO];
+		
+		// Save user's preference to prefs file:
+		[[NSUserDefaults standardUserDefaults] setObject: doCheck forKey: @"UKUpdateChecker:CheckAtStartup"];
+	}
+	
+	[prefsButton setState: [doCheck boolValue]];	// Update prefs button, if we have one.
+	
+	// If user wants us to check for updates at startup, do so:
+	if( [doCheck boolValue] )
+	{
+		NSTimeInterval  timeSinceLastCheck;
+		
+		// Determine how long since last check:
+		if( lastCheckDateNum == nil )
+			lastCheckDate = [NSDate distantPast];  // If there's no date in prefs, use something guaranteed to be past.
+		else
+			lastCheckDate = [NSDate dateWithTimeIntervalSinceReferenceDate: [lastCheckDateNum doubleValue]];
+		timeSinceLastCheck = -[lastCheckDate timeIntervalSinceNow];
+		
+		// If last check was more than DAYS_BETWEEN_CHECKS days ago, check again now:
+		if( timeSinceLastCheck > (3600 *24 *DAYS_BETWEEN_CHECKS) )
+		{
+			[NSThread detachNewThreadSelector: @selector(checkForUpdatesAndNotify:) toTarget: self withObject: [NSNumber numberWithBool: NO]];
+			[[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithDouble: [NSDate timeIntervalSinceReferenceDate]] forKey: @"UKUpdateChecker:LastCheckDate"];
+		}
+	}
+
+
+
+============== actions ==============
+
+// -----------------------------------------------------------------------------
+//	takeBoolFromObject:
+//		Action for the "check at startup" checkbox in your preferences.
+//
+//	REVISIONS:
+//		2004-10-19	witness	Documented.
+// -----------------------------------------------------------------------------
+ 
+-(IBAction)		takeBoolFromObject: (id)sender
+{
+	if( [sender respondsToSelector: @selector(boolValue)] )
+		[self setCheckAtStartup: [sender boolValue]];
+	else
+		[self setCheckAtStartup: [sender state]];
+}
+ 
+ 
+// -----------------------------------------------------------------------------
+//	setCheckAtStartup:
+//		Mutator for startup check (de)activation.
+//
+//	REVISIONS:
+//		2004-10-19	witness	Documented.
+// -----------------------------------------------------------------------------
+ 
+-(void)			setCheckAtStartup: (BOOL)shouldCheck
+{
+	NSNumber*		doCheck = [NSNumber numberWithBool: shouldCheck];
+	[[NSUserDefaults standardUserDefaults] setObject: doCheck forKey: @"UKUpdateChecker:CheckAtStartup"];
+	
+	[prefsButton setState: shouldCheck];
+	[[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithDouble: 0] forKey: @"UKUpdateChecker:LastCheckDate"];
+}
+ 
+ 
+// -----------------------------------------------------------------------------
+//	checkAtStartup:
+//		Accessor for finding out whether this will check at startup.
+//
+//	REVISIONS:
+//		2004-10-19	witness	Documented.
+// -----------------------------------------------------------------------------
+ 
+-(BOOL)			checkAtStartup
+{
+	NSNumber	*   doCheck = [[NSUserDefaults standardUserDefaults] objectForKey: @"UKUpdateChecker:CheckAtStartup"];
+	
+	if( doCheck )
+		return [doCheck boolValue];
+	else
+		return YES;
+}
+ 
+

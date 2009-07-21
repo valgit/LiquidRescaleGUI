@@ -1,74 +1,102 @@
 {
     IBClasses = (
-        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
-        {
-            ACTIONS = {
-                about = id; 
-                addImage = id; 
-                cancel = id; 
-                chooseOutputDirectory = id; 
-                enfuse = id; 
-                openPreferences = id; 
-                openPresets = id; 
-                quit = id; 
-                reset = id; 
-                savePresets = id; 
-                takeContrast = id; 
-                takeExposure = id; 
-                takeMu = id; 
-                takeSaturation = id; 
-                takeSigma = id; 
-            }; 
-            CLASS = enfuseController; 
-            LANGUAGE = ObjC; 
-            OUTLETS = {
-                mAppendTo = NSTextField; 
-                mAssumeFisheye = NSButton; 
-                mAutoalign = NSButton; 
-                mCancelButton = NSButton; 
-                mContrastSlider = NSSlider; 
-                mContrastStepper = NSStepper; 
-                mContrastTextField = NSTextField; 
-                mContrastWindowSizeTextField = NSTextField; 
-                mControlPoints = NSTextField; 
-                mCopyAperture = NSButton; 
-                mCopyFocal = NSButton; 
-                mCopyMeta = NSButton; 
-                mCopyShutter = NSButton; 
-                mDoAfter = NSMatrix; 
-                mEnfuseButton = NSButton; 
-                mExposureSlider = NSSlider; 
-                mExposureStepper = NSStepper; 
-                mExposureTextField = NSTextField; 
-                mGridSize = NSTextField; 
-                mImageArrayCtrl = NSArrayController; 
-                mMinCurvatureTextField = NSTextField; 
-                mMuSlider = NSSlider; 
-                mMuStepper = NSStepper; 
-                mMuTextField = NSTextField; 
-                mOptimizeFOV = NSButton; 
-                mOuputFile = NSTextField; 
-                mOutFile = NSTextField; 
-                mOutFormat = NSPopUpButton; 
-                mOutQuality = NSTextField; 
-                mOutputQualitySlider = NSSlider; 
-                mOutputType = NSMatrix; 
-                mPreviewImage = NSImageView; 
-                mProgressIndicator = NSProgressIndicator; 
-                mProgressPanel = NSPanel; 
-                mProgressText = NSTextField; 
-                mResetButton = NSButton; 
-                mSaturationSlider = NSSlider; 
-                mSaturationStepper = NSStepper; 
-                mSaturationTextField = NSTextField; 
-                mSigmaSlider = NSSlider; 
-                mSigmaStepper = NSStepper; 
-                mSigmaTextField = NSTextField; 
-                mTableImage = NSTableView; 
-                window = NSWindow; 
-            }; 
-            SUPERCLASS = NSObject; 
-        }
-    ); 
-    IBVersion = 1; 
+	{
+	    ACTIONS = {
+		about = id;
+		addImage = id;
+		cancel = id;
+		chooseOutputDirectory = id;
+		enfuse = id;
+		openPreferences = id;
+		openPresets = id;
+		quit = id;
+		reset = id;
+		savePresets = id;
+		takeContrast = id;
+		takeExposure = id;
+		takeMu = id;
+		takeSaturation = id;
+		takeSigma = id;
+	    };
+	    CLASS = enfuseController;
+	    LANGUAGE = ObjC;
+	    OUTLETS = {
+		mAppendTo = id;
+		mAssumeFisheye = id;
+		mAutoalign = id;
+		mCancelButton = id;
+		mContrastSlider = id;
+		mContrastStepper = id;
+		mContrastTextField = id;
+		mContrastWindowSizeTextField = id;
+		mControlPoints = id;
+		mCopyAperture = id;
+		mCopyFocal = id;
+		mCopyMeta = id;
+		mCopyShutter = id;
+		mDoAfter = id;
+		mEnfuseButton = id;
+		mExposureSlider = id;
+		mExposureStepper = id;
+		mExposureTextField = id;
+		mGridSize = id;
+		mImageArrayCtrl = id;
+		mMinCurvatureTextField = id;
+		mMuSlider = id;
+		mMuStepper = id;
+		mMuTextField = id;
+		mOptimizeFOV = id;
+		mOuputFile = id;
+		mOutFile = id;
+		mOutFormat = id;
+		mOutQuality = id;
+		mOutputQualitySlider = id;
+		mOutputType = id;
+		mPreviewImage = id;
+		mProgressIndicator = id;
+		mProgressPanel = id;
+		mProgressText = id;
+		mResetButton = id;
+		mSaturationSlider = id;
+		mSaturationStepper = id;
+		mSaturationTextField = id;
+		mSigmaSlider = id;
+		mSigmaStepper = id;
+		mSigmaTextField = id;
+		mTableImage = id;
+		window = id;
+	    };
+	    SUPERCLASS = NSObject;
+	},
+	{
+	    CLASS = LiquidRescaleController;
+	    LANGUAGE = ObjC;
+	    OUTLETS = {
+		mCancelButton = id;
+	    };
+	    SUPERCLASS = NSObject;
+	},
+	{
+	    ACTIONS = {
+		about = id;
+		addImage = id;
+		chooseOutputDirectory = id;
+		enfuse = id;
+		openPreferences = id;
+		openPresets = id;
+		quit = id;
+		reset = id;
+		savePresets = id;
+		takeContrast = id;
+		takeExposure = id;
+		takeMu = id;
+		takeSaturation = id;
+		takeSigma = id;
+	    };
+	    CLASS = FirstResponder;
+	    LANGUAGE = ObjC;
+	    SUPERCLASS = NSObject;
+	}
+    );
+    IBVersion = 1;
 }

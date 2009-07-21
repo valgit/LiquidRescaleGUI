@@ -12,6 +12,11 @@
 
 #include <math.h>
 
+#define LS_CANCEL NSLocalizedStringFromTable(@"Cancel",  @"cancel", "Button choice for cancel")
+#define LS_ERROR NSLocalizedStringFromTable(@"Error", @"error", @"title for error")
+#define LS_CONTINUE NSLocalizedStringFromTable(@"Continue", @"continue", @"Button choice for continue")
+#define LS_OK NSLocalizedStringFromTable(@"OK", @"ok", "Button choice for OK")
+
 // Categories : private methods
 @interface LiquidRescaleController (Private)
 #ifndef GNUSTEP
@@ -54,9 +59,6 @@
 	// [ic setImageScaling:NSScaleProportionally]; // or NSScaleToFit
 	
 	//NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-	//NSLog(@"ICC aware ? %d",[defaults boolForKey:@"useCIECAM"]); // ICC profile
-																   // int cachesize = [defaults intForKey:@"cachesize"]; // def 1024
-																   // int blocksize = [defaults intForKey:@"blocksize"]; // def 2048
 	[self reset:mResetButton];
 	[self getDefaults];
 
@@ -116,17 +118,13 @@
    NSMutableDictionary *plist = [NSMutableDictionary dictionary];
    [plist setObject:@"1.0"  forKey:@"version"];
 
-   [plist setObject:[NSNumber numberWithDouble:[mContrastSlider doubleValue]] forKey: @"contrast"];
-   [plist setObject:[NSNumber numberWithDouble:[mExposureSlider doubleValue]] forKey: @"exposure"];
-   [plist setObject:[NSNumber numberWithDouble:[mSaturationSlider doubleValue]] forKey: @"saturation"];
-
-   [plist setObject:[NSNumber numberWithDouble:[mMuSlider doubleValue]] forKey: @"mu"];
-   [plist setObject:[NSNumber numberWithDouble:[mSigmaSlider doubleValue]] forKey: @"sigma"];
-
-   [plist setObject:[NSNumber numberWithDouble:[mContrastWindowSizeTextField doubleValue]] forKey: @"windowsize"];
-   [plist setObject:[NSNumber numberWithDouble:[mMinCurvatureTextField doubleValue]] forKey: @"mincurvature"];
+   [plist setObject:[NSNumber numberWithDouble:[mStepsSlider doubleValue]] forKey: @"steps"];
+   [plist setObject:[NSNumber numberWithDouble:[mRigiditySlider doubleValue]] forKey: @"rigidity"];
+   [plist setObject:[NSNumber numberWithDouble:[mPercentSlider doubleValue]] forKey: @"percent"];
 
    return plist;
+}
+
 - (NSData *) dataOfType: (NSString *) typeName
 {
 
@@ -137,15 +135,9 @@
                    initForWritingWithMutableData: data];
     [archiver setOutputFormat: NSPropertyListXMLFormat_v1_0];
 
-    [archiver encodeDouble: [mContrastSlider doubleValue]  forKey: @"contrast"];
-    [archiver encodeDouble: [mExposureSlider doubleValue]  forKey: @"exposure"];
-    [archiver encodeDouble: [mSaturationSlider doubleValue]  forKey: @"saturation"];
-
-    [archiver encodeDouble: [mMuSlider doubleValue]  forKey: @"mu"];
-    [archiver encodeDouble: [mSigmaSlider doubleValue]  forKey: @"sigma"];
-
-    [archiver encodeDouble: [mContrastWindowSizeTextField doubleValue]  forKey: @"windowsize"];
-    [archiver encodeDouble: [mMinCurvatureTextField doubleValue]  forKey: @"mincurvature"];
+    [archiver encodeDouble: [mStepsSlider doubleValue]  forKey: @"steps"];
+    [archiver encodeDouble: [mRigiditySlider doubleValue]  forKey: @"rigidity"];
+    [archiver encodeDouble: [mPercentSlider doubleValue]  forKey: @"percent"];
 
     [archiver finishEncoding];
 
@@ -170,7 +162,9 @@
 	MLogString(1 ,@"error: %@", errorInfo);
 	int result;
         result = NSRunAlertPanel([[NSProcessInfo processInfo] processName],
-                @"file operation error",@"Continue", @"Cancel", NULL,
+		NSLocalizedStringFromTable(@"file operation error", @"file error", @"file"),
+		LS_CONTINUE,
+	        LS_CANCEL, NULL,
                 [errorInfo objectForKey:@"Error"],
                 [errorInfo objectForKey:@"Path"]);
 
@@ -348,20 +342,20 @@
 {
 	MLogString(1 ,@"");
 	
-	[mContrastSlider setFloatValue:0.0]; // (0 <= WEIGHT <= 1).  Default: 0
-	[self takeContrast:mContrastSlider];
+	[mStepsSlider setIntValue:1]; // (0 <= steps <= 1).  Default: 1
+	[self takeSteps:mStepsSlider];
 	
-	[mExposureSlider setFloatValue:1.0]; // 0 <= WEIGHT <= 1).  Default: 1
-	[self takeExposure:mExposureSlider];
+	[mRigiditySlider setFloatValue:0.0]; // 0 <= rigidity <= 10).  Default: 0.0
+	[self takeRigidity:mRigiditySlider];
 	
-	[mSaturationSlider setFloatValue:0.2]; // (0 <= WEIGHT <= 1).  Default: 0.2
-	[self takeSaturation:mSaturationSlider];
+	[mHeightSlider setFloatValue:0.2]; // 
+	[self takeHeight:mHeightSlider];
 	
-	[mMuSlider setFloatValue:0.5]; // mu (0 <= MEAN <= 1).  Default: 0.5
-	[self takeMu:mMuSlider];
+	[mWidthSlider setFloatValue:0.5]; // 
+	[self takeWidth:mWidthSlider];
 	
-	[mSigmaSlider setFloatValue:0.2]; // sigma (SIGMA > 0).  Default: 0.2
-	[self takeSigma:mSigmaSlider];
+	[mPercentSlider setFloatValue:100.0]; // (0 <= percent <= 100 ).  Default: 100.0
+	[self takePercent:mPercentSlider];
 }
 
 - (IBAction) about: (IBOutlet)sender;
@@ -430,22 +424,22 @@
 #if 1
 //  test for detecting end of sliding ...
 //
-- (IBAction)takeSaturation:(id)sender {
+- (IBAction)takeHeight:(id)sender {
 	//MLogString(6 ,@"");
 	
-    SEL trackingEndedSelector = @selector(SaturationsliderEnded:);
+    SEL trackingEndedSelector = @selector(HeightsliderEnded:);
     [NSObject cancelPreviousPerformRequestsWithTarget:self
 											 selector:trackingEndedSelector object:sender];
     [self performSelector:trackingEndedSelector withObject:sender afterDelay:0.0];
 	
     // do whatever you want to do during tracking here 
 	float theValue = [sender floatValue];
-	[mSaturationTextField setFloatValue:theValue];
-	[mSaturationSlider setFloatValue:theValue];
+	[mHeightTextField setFloatValue:theValue];
+	[mHeightSlider setFloatValue:theValue];
 	
 }
 
-- (void)SaturationsliderEnded:(id)sender 
+- (void)HeightsliderEnded:(id)sender 
 {
 	MLogString(6 ,@"");
     // do whatever you want to do when tracking ends here 
@@ -453,21 +447,21 @@
 	[self buildPreview];
 }
 
-- (IBAction)takeContrast:(id)sender {
+- (IBAction)takeSteps:(id)sender {
 	//MLogString(6 ,@"");
 	
-    SEL trackingEndedSelector = @selector(ContrastsliderEnded:);
+    SEL trackingEndedSelector = @selector(StepssliderEnded:);
     [NSObject cancelPreviousPerformRequestsWithTarget:self
 	 selector:trackingEndedSelector object:sender];
     [self performSelector:trackingEndedSelector withObject:sender afterDelay:0.0];
 	
     // do whatever you want to do during tracking here 
 	float theValue = [sender floatValue];
-	[mContrastTextField setFloatValue:theValue];
-	[mContrastSlider setFloatValue:theValue];	
+	[mStepsTextField setFloatValue:theValue];
+	[mStepsSlider setFloatValue:theValue];	
 }
 
-- (void)ContrastsliderEnded:(id)sender 
+- (void)StepssliderEnded:(id)sender 
 {
 	MLogString(6 ,@"");
     // do whatever you want to do when tracking ends here 
@@ -475,21 +469,21 @@
 	[self buildPreview];
 }
 
-- (IBAction)takeExposure:(id)sender {
+- (IBAction)takeRigidity:(id)sender {
 	//MLogString(6 ,@"");
 
-    SEL trackingEndedSelector = @selector(ExposuresliderEnded:);
+    SEL trackingEndedSelector = @selector(RigiditysliderEnded:);
     [NSObject cancelPreviousPerformRequestsWithTarget:self
 	selector:trackingEndedSelector object:sender];
     [self performSelector:trackingEndedSelector withObject:sender afterDelay:0.0];
 
     // do whatever you want to do during tracking here 
 	float theValue = [sender floatValue];
-	[mExposureTextField setFloatValue:theValue];
-	[mExposureSlider setFloatValue:theValue];
+	[mRigidityTextField setFloatValue:theValue];
+	[mRigiditySlider setFloatValue:theValue];
 }
 
-- (void)ExposuresliderEnded:(id)sender 
+- (void)RigiditysliderEnded:(id)sender 
 {
 	MLogString(6 ,@"");
     // do whatever you want to do when tracking ends here 
@@ -500,50 +494,50 @@
 #else
 // normal way ...
 //
-- (IBAction) takeSaturation: (id)sender;
+- (IBAction) takeHeight: (id)sender;
 {
 	//NSLog(@"%s",__PRETTY_FUNCTION__);
 	float theValue = [sender floatValue];
-	[mSaturationTextField setFloatValue:theValue];
+	[mHeightTextField setFloatValue:theValue];
 	//[mStrengthStepper setFloatValue:theValue];
-	[mSaturationSlider setFloatValue:theValue];
+	[mHeightSlider setFloatValue:theValue];
 }
 
-- (IBAction) takeContrast: (id)sender;
+- (IBAction) takeSteps: (id)sender;
 {
 	//NSLog(@"%s",__PRETTY_FUNCTION__);
 	float theValue = [sender floatValue];
-	[mContrastTextField setFloatValue:theValue];
+	[mStepsTextField setFloatValue:theValue];
 	//[mStrengthStepper setFloatValue:theValue];
-	[mContrastSlider setFloatValue:theValue];
+	[mStepsSlider setFloatValue:theValue];
 }
 
-- (IBAction) takeExposure: (id)sender;
+- (IBAction) takeRigidity: (id)sender;
 {
 	//NSLog(@"%s",__PRETTY_FUNCTION__);
 	float theValue = [sender floatValue];
-	[mExposureTextField setFloatValue:theValue];
+	[mRigidityTextField setFloatValue:theValue];
 	//[mStrengthStepper setFloatValue:theValue];
-	[mExposureSlider setFloatValue:theValue];
+	[mRigiditySlider setFloatValue:theValue];
 }
 #endif
 
-- (IBAction) takeSigma: (id)sender;
+- (IBAction) takePercent: (id)sender;
 {
 	//NSLog(@"%s",__PRETTY_FUNCTION__);
 	float theValue = [sender floatValue];
-	[mSigmaTextField setFloatValue:theValue];
+	[mPercentTextField setFloatValue:theValue];
 	//[mStrengthStepper setFloatValue:theValue];
-	[mSigmaSlider setFloatValue:theValue];
+	[mPercentSlider setFloatValue:theValue];
 }
 
-- (IBAction) takeMu: (id)sender;
+- (IBAction) takeWidth: (id)sender;
 {
 	//NSLog(@"%s",__PRETTY_FUNCTION__);
 	float theValue = [sender floatValue];
-	[mMuTextField setFloatValue:theValue];
+	[mWidthTextField setFloatValue:theValue];
 	//[mStrengthStepper setFloatValue:theValue];
-	[mMuSlider setFloatValue:theValue];
+	[mWidthSlider setFloatValue:theValue];
 }
 
 - (void) openPresetsDidEnd:(NSOpenPanel *)panel
@@ -571,11 +565,11 @@
 	} else {
 		// TODO : better init ...
 		//NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithContentsOfFile:[panel filename]];
-		[mContrastSlider setFloatValue:[[plistDict objectForKey:@"contrast"] floatValue]];
-		[mExposureSlider setFloatValue:[[plistDict objectForKey:@"exposure"] floatValue]];
-		[mSaturationSlider setFloatValue:[[plistDict objectForKey:@"saturation"] floatValue]];
-		[mMuSlider setFloatValue:[[plistDict objectForKey:@"mu"] floatValue]];
-		[mSigmaSlider setFloatValue:[[plistDict objectForKey:@"sigma"] floatValue]];
+		[mStepsSlider setFloatValue:[[plistDict objectForKey:@"steps"] floatValue]];
+		[mRigiditySlider setFloatValue:[[plistDict objectForKey:@"rigidity"] floatValue]];
+		[mHeightSlider setFloatValue:[[plistDict objectForKey:@"height"] floatValue]];
+		[mWidthSlider setFloatValue:[[plistDict objectForKey:@"width"] floatValue]];
+		[mPercentSlider setFloatValue:[[plistDict objectForKey:@"percent"] floatValue]];
 	}
 	//[plistDict release];
 	//[plistData release];
@@ -764,19 +758,19 @@
 				if (fNumberObj) {
 					fNumberStr = [NSString stringWithFormat:@"F%@", [fNumberObj stringValue]];
 				}
-				NSNumber *exposureTimeObj = (NSNumber *)[exif objectForKey:(NSString *)kCGImagePropertyExifExposureTime];
+				NSNumber *exposureTimeObj = (NSNumber *)[exif objectForKey:(NSString *)kCGImagePropertyExifRigidityTime];
 				if (exposureTimeObj) {
 					exposureTimeStr = [NSString stringWithFormat:@"1/%.0f", (1/[exposureTimeObj floatValue])];
 				}
-				NSNumber *exposureBiasObj = (NSNumber *)[exif objectForKey:@"ExposureBiasValue"];
+				NSNumber *exposureBiasObj = (NSNumber *)[exif objectForKey:@"RigidityBiasValue"];
 				if (exposureBiasObj) {
-					exposureBiasStr = [NSString stringWithFormat:@"Exposure Comp. : %+0.1f EV", [exposureBiasObj floatValue]];
+					exposureBiasStr = [NSString stringWithFormat:@"Rigidity Comp. : %+0.1f EV", [exposureBiasObj floatValue]];
 				} else 
 					exposureBiasStr = @"";
 				
 				text = [NSString stringWithFormat:@"%@\n%@ / %@ @ %@\n%@", [fileName lastPathComponent],
 					focalLengthStr,exposureTimeStr,fNumberStr,exposureBiasStr];
-			} /* kCGImagePropertyExifFocalLength kCGImagePropertyExifExposureTime kCGImagePropertyExifExposureTime */
+			} /* kCGImagePropertyExifFocalLength kCGImagePropertyExifRigidityTime kCGImagePropertyExifRigidityTime */
 			image = [self createThumbnail:source];
 			CFRelease(source);
 			CFRelease(properties);
@@ -788,7 +782,7 @@
 		//NSLog(@"Exif Data in  %@", exifDict);
 		// TODO better with ImageIO
 		if (exifDict != nil) {
-			NSNumber *expo = [exifDict valueForKey:@"ExposureTime"];
+			NSNumber *expo = [exifDict valueForKey:@"RigidityTime"];
 			NSString *speed;
 			if (expo)
 				speed = [NSString stringWithFormat:@"1/%.0f",ceil(1.0 / [expo doubleValue])];
@@ -971,7 +965,7 @@
 
 			if ([mCopyShutter state]==NSOnState) {
 				MLogString(1 ,@"removing shutter speed");
-				[newExif removeObjectForKey:(NSString *)kCGImagePropertyExifExposureTime];
+				[newExif removeObjectForKey:(NSString *)kCGImagePropertyExifRigidityTime];
 			}
 			if ([mCopyAperture state]==NSOnState) {
 				MLogString(1 ,@"removing aperture");
@@ -981,7 +975,7 @@
 				MLogString(1 ,@"removing focal length");
 				[newExif removeObjectForKey:(NSString *)kCGImagePropertyExifFocalLength];
 			}
-		} /* kCGImagePropertyExifFocalLength kCGImagePropertyExifExposureTime kCGImagePropertyExifExposureTime */
+		} /* kCGImagePropertyExifFocalLength kCGImagePropertyExifRigidityTime kCGImagePropertyExifRigidityTime */
 		
 		//add our modified EXIF data back into the imageÕs metadata
 		[metadataAsMutable setObject:newExif forKey:(NSString *)kCGImagePropertyExifDictionary];
