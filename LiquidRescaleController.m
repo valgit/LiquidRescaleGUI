@@ -5,12 +5,17 @@
 #import "NSImage+GTImageConversion.h"
 #else
 #import "NSImage-ProportionalScaling.h"
+#import "NSImage+Cropped.h"
 #endif
 #import "MLog.h"
 #import "LiquidRescaleController.h"
 #import "NSFileManager-Extensions.h"
 
+#import "ImagePanelView.h"
+#import "ImageDisplayView.h"
+
 #include <math.h>
+#include "lqr.h"
 
 #define LS_CANCEL NSLocalizedStringFromTable(@"Cancel",  @"cancel", "Button choice for cancel")
 #define LS_ERROR NSLocalizedStringFromTable(@"Error", @"error", @"title for error")
@@ -35,6 +40,46 @@
 -(void)buildPreview;
 
 @end
+
+// TODO: place in their own files
+// some global C functions
+/* define custom energy function: sobel */
+gfloat
+sobel(gint x, gint y, gint w, gint h, LqrReadingWindow *rw, gpointer extra_data)
+{
+    gint i, j;
+    gdouble ex = 0;
+    gdouble ey = 0;
+    gdouble k[3][3] = { {0.125, 0.25, 0.125}, {0, 0, 0}, {-0.125, -0.25, -0.125} };
+
+    for (i = -1; i <= 1; i++) {
+        for (j = -1; j <= 1; j++) {
+            ex += k[i + 1][j + 1] * lqr_rwindow_read(rw, i, j, 0);
+            ey += k[j + 1][i + 1] * lqr_rwindow_read(rw, i, j, 0);
+        }
+    }
+    return (gfloat) (sqrt(ex * ex + ey * ey));
+}
+
+// TODO: better GUI here !
+LqrRetVal my_progress_init(const gchar *message)
+{
+  fprintf(stderr,"lqr: <start> %s\n",message);
+  return LQR_OK;
+}
+
+LqrRetVal my_progress_update(gdouble percentage)
+{
+  fprintf(stderr,"lqr: %.2f %%\n",100*percentage);
+  return LQR_OK;
+}
+
+LqrRetVal my_progress_end(const gchar *message)
+{
+  fprintf(stderr,"lqr: <end> %s\n",message);
+  return LQR_OK;
+}
+
 
 @implementation LiquidRescaleController
 
@@ -67,8 +112,15 @@
 	
 	NSString* imageName = [[NSBundle mainBundle]
                     pathForResource:@"image_broken" ofType:@"png"];
-	NSImage* _image = [[[NSImage alloc] initWithContentsOfFile:imageName] autorelease];
-	[mPreviewImage setImage:_image];
+	//NSImage* _image = [[[NSImage alloc] initWithContentsOfFile:imageName] autorelease];
+	//_image = [[[NSImage alloc] initWithContentsOfFile:imageName] autorelease];
+	_image = NULL;
+	//[mPreviewImage setImage:_image];
+	[self setZoomFactor:100.0];
+	// TODO: missing links !!
+	[_panelImageView setDataSource:self];
+	[_panelImageView setDelegate:self];
+	[[NSApplication sharedApplication] setDelegate:self];
 }
 
 - (id)init
@@ -106,8 +158,9 @@
 			break;
 		default : {
 			// do nothing ? use for preview !
-			NSImage* _image = [[[NSImage alloc] initWithContentsOfFile:file] autorelease];
-			[mPreviewImage setImage:_image];
+			// TODO: 
+			//NSImage* _image = [[[NSImage alloc] initWithContentsOfFile:file] autorelease];
+			//[mPreviewImage setImage:_image];
 			}
 			break;
     }
@@ -335,6 +388,147 @@
 - (IBAction)LiquidRescale:(id)sender
 {
 	MLogString(1 ,@"");	
+	if (_image != NULL) {
+	 // TODO: from interface !
+	  int max_step = [mStepsSlider intValue];
+	  double rigidity =  [mRigiditySlider doubleValue];
+	  int side_switch_frequency = 0;
+	  double enl_step = 1.5;
+
+	  MLogString(1 ,@"steps: %d, rig: %f ",max_step,rigidity);
+
+	  int width = [mWidthSlider intValue];
+	  int height = [mHeightSlider intValue];
+	  if([mMaintainAspectButton state]==NSOnState) {
+		MLogString(1 ,@"maitingin ratio");
+	  }
+
+	  MLogString(1 ,@"resizing to (%d,%d) ",width,height);
+	  if([mAddWeightMaskButton state]==NSOnState) {
+		MLogString(1 ,@"creating mask");
+	  }
+	  if([mPreserveSkinTonesButton state]==NSOnState) {
+		MLogString(1 ,@"preserving skin tones");
+	  }
+	  // TODO: better interface ?
+	  // TODO: this part should be done on load ...
+	  NSBitmapImageRep *rep = [NSBitmapImageRep imageRepWithData:[_image TIFFRepresentation]];
+	  if ([rep bitsPerSample] != 8) {
+                NSLog(@"unsupported bpp");
+	  }
+	  int x,y;
+          int             Bpr =[rep bytesPerRow];
+          int             spp =[rep samplesPerPixel];
+          int             w =[rep pixelsWide];
+          int             h =[rep pixelsHigh];
+          unsigned char  *pixels =[rep bitmapData];
+
+	  unsigned char* img_bits = (unsigned char*)malloc(w*h*3);
+          for (y=0; y<h; y++) {
+               unsigned short *p = (unsigned short *)(pixels + Bpr*y);
+               unsigned char* _imptr = img_bits + y * w * 3;
+               for (x=0; x<w; x++,p+=spp) {
+                        // maybe we should use the alpha plane here ...
+                        _imptr[3*x] = *p;
+                        _imptr[3*x+1] = *(p+1);
+                        _imptr[3*x+2] = *(p+2);
+               }
+           }
+
+	  if ([mPercentSlider doubleValue] <100.0) { // mixed rescale 
+		double stdRescaleP = (100.0 - [mPercentSlider doubleValue]) / 100.0;
+		int diff_w         = (int)(stdRescaleP * (w - width));
+		int diff_h         = (int)(stdRescaleP * (h - height));
+
+		//imTemp.resize(imTemp.width() - diff_w, imTemp.height() - diff_h);
+		MLogString(1 ,@"mix resize with (%d,%d) -> (%d,%d) ",diff_w,diff_h,
+			w - diff_w, h - diff_h);
+	  }
+	 /* (I.1) swallow the buffer in a (minimal) LqrCarver object
+	  *       (arguments are width, height and number of colour channels) */
+	 LqrCarver *carver;
+	 carver = lqr_carver_new(img_bits, w, h, 3);
+
+	 // Create a progress object
+	 LqrProgress *progress;
+
+	 progress = lqr_progress_new();
+	 lqr_progress_set_init(progress, my_progress_init);
+	 lqr_progress_set_update(progress, my_progress_update);
+	 lqr_progress_set_end(progress, my_progress_end);
+
+	  /* (I.2) initialize the carver (with default values),
+	   *          so that we can do the resizing */
+	  lqr_carver_init(carver, max_step, rigidity);
+	  lqr_carver_set_progress(carver, progress);
+
+	  /* (I.3a.3) set the energy function */
+	  lqr_carver_set_energy_function(carver, sobel, 1, LQR_ER_BRIGHTNESS, NULL);
+
+	  /* (I.3b.5) set the side switch frequency */
+	  lqr_carver_set_side_switch_frequency(carver, side_switch_frequency);
+
+	  /* (I.3b.6) set the enlargement step */
+	  lqr_carver_set_enl_step(carver, enl_step);
+
+	  // TODO: bias and co here ...
+
+	  /**** (II) LIQUID RESCALE ****/
+	  lqr_carver_resize(carver, width, height);
+
+	  /**** (III) get the new data ****/
+	  w = lqr_carver_get_width(carver);
+	  h = lqr_carver_get_height(carver);
+	  MLogString(1 ,@"resizing data (%d,%d,%d) ",w,h,lqr_carver_get_channels(carver));
+	  // TODO: is it needed ?
+	  if (lqr_carver_get_channels(carver) != 3) {
+		NSLog(@"bad channel number !");
+		return;
+	  }
+
+          // create a new representation without the alpha plane ...
+	  NSBitmapImageRep *destImageRep = [[[NSBitmapImageRep alloc]
+                    initWithBitmapDataPlanes:NULL
+                                          pixelsWide:w
+                                          pixelsHigh:h
+                                          bitsPerSample:8 // [rep bitsPerSample]
+                                          samplesPerPixel:3
+                                        hasAlpha:NO
+                                        isPlanar:NO
+                                          colorSpaceName:NSCalibratedRGBColorSpace
+                                         bytesPerRow:0 // (spp*width)
+                                        bitsPerPixel:24 ] autorelease];
+
+        int destBpr = [destImageRep bytesPerRow];
+        int destspp = [destImageRep samplesPerPixel];
+        unsigned char* destpix = [destImageRep bitmapData];
+        NSLog(@"%s exporting photo Bpr = %d, %d,  Spp = %d,%d (alpha: %d) %d %d",__PRETTY_FUNCTION__,
+                        Bpr,destBpr,spp,destspp, [destImageRep hasAlpha],[rep bitsPerSample],[rep bitsPerPixel]);
+
+        unsigned char *rgb;
+        lqr_carver_scan_reset(carver);
+	while (lqr_carver_scan(carver, &x, &y, &rgb)) {
+                unsigned char *q = (unsigned char *)(destpix + destBpr*y + destspp*x);
+                        //*q = rgb[0]; // red
+                        *(q+1) = rgb[1];
+                        //*(q+2) = rgb[2];
+        }
+
+	NSData *photoData = [destImageRep representationUsingType:NSTIFFFileType properties:NULL];
+        [photoData writeToFile:@"test.tif" atomically:YES];
+
+	NSImage *image = [[NSImage alloc] initWithSize:[destImageRep size]];
+        [image addRepresentation:destImageRep];
+
+	[_image release];
+	_image = image;
+	//TODO: should be done on release ?
+	/**** (IV) delete structures ? ****/
+        lqr_carver_destroy(carver);
+	} else
+              NSRunCriticalAlertPanel ([[NSProcessInfo processInfo] processName],
+			NSLocalizedString(@"No Image Loaded",@""), 
+			LS_OK, NULL, NULL);
 }
 
 
@@ -348,14 +542,10 @@
 	[mRigiditySlider setFloatValue:0.0]; // 0 <= rigidity <= 10).  Default: 0.0
 	[self takeRigidity:mRigiditySlider];
 	
-	[mHeightSlider setFloatValue:0.2]; // 
-	[self takeHeight:mHeightSlider];
-	
-	[mWidthSlider setFloatValue:0.5]; // 
-	[self takeWidth:mWidthSlider];
-	
 	[mPercentSlider setFloatValue:100.0]; // (0 <= percent <= 100 ).  Default: 100.0
 	[self takePercent:mPercentSlider];
+
+	[self setupImageSize];
 }
 
 - (IBAction) about: (IBOutlet)sender;
@@ -658,6 +848,17 @@
     return YES;
 }
 
+- (void)setupImageSize;
+{
+        NSSize imSize = [_image size];
+	[mHeightSlider setMaxValue:imSize.height];
+	[mHeightSlider setFloatValue:imSize.height]; //
+	[self takeHeight:mHeightSlider];
+	[mWidthSlider setMaxValue:imSize.width];
+	[mWidthSlider setFloatValue:imSize.width]; //
+	[self takeWidth:mWidthSlider];
+}
+
 #pragma mark -
 #pragma mark tableview delegate
 
@@ -782,7 +983,7 @@
 		//NSLog(@"Exif Data in  %@", exifDict);
 		// TODO better with ImageIO
 		if (exifDict != nil) {
-			NSNumber *expo = [exifDict valueForKey:@"RigidityTime"];
+			NSNumber *expo = [exifDict valueForKey:@"ExposureTime"];
 			NSString *speed;
 			if (expo)
 				speed = [NSString stringWithFormat:@"1/%.0f",ceil(1.0 / [expo doubleValue])];
@@ -812,7 +1013,9 @@
 #else
 		[mImageArrayCtrl addObject:newImage];
 #endif
-		[self buildPreview];
+		//[self buildPreview];
+		_image = image;
+		[self setupImageSize];
 		//[newImage release]; // memory bug ?
 		}
 		
@@ -885,6 +1088,52 @@
 - (IBAction)openPreferences:(id)sender
 {
 	MLogString(1 ,@"");
+}
+
+#pragma mark < Accessors >
+
+-(double)zoomFactor;
+{
+        return _zoomfactor;
+}
+
+-(void)setZoomFactor:(double)factor;
+{
+        if (_zoomfactor != factor)
+                _zoomfactor = factor;
+}
+
+#pragma mark <AppDataSource>
+
+- (NSSize) imagePanelViewImageSize:(NSView*)imageView;
+{
+        NSLog(@"%s",__PRETTY_FUNCTION__);
+        return [_image size];
+}
+
+- (NSImage*) imagePanelViewImageThumbnail:(NSView*)imageView withSize:(NSSize)size;
+{
+        NSLog(@"%s",__PRETTY_FUNCTION__);
+        return _image;
+}
+
+#pragma mark <AppDelegate>
+
+- (void) imagePanelViewSelectionDidChange:(NSView*)imageView;
+{
+        NSPoint anchor = [(ImagePanelView*)imageView anchor];
+        //NSLog(@"%s new sel : %f %f",__PRETTY_FUNCTION__,anchor.x,anchor.y);
+
+        // get the crop
+        double percent = 100.0 / [self zoomFactor];
+        NSSize viewsize = [_imageView frame].size;
+        NSRect selrect = NSMakeRect(
+                anchor.x,anchor.y,
+                viewsize.width*percent,viewsize.height*percent);
+        NSImage* imgcrop = [_image imageFromRect:selrect];
+        //[_imageView setImageScaling:NSScaleProportionally];
+        [_imageView setImage: imgcrop];
+        //[imgcrop release];
 }
 
 @end
@@ -1035,12 +1284,12 @@
         NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
 
         if (standardUserDefaults) {
-			
+#if 0			
               [standardUserDefaults setObject:[mOuputFile stringValue] forKey:@"outputDirectory"];
               [standardUserDefaults setObject:[mOutFile stringValue] forKey:@"outputFile"];
               [standardUserDefaults setObject:[mAppendTo stringValue] forKey:@"outputAppendTo"];
               [standardUserDefaults setObject:[mOutQuality stringValue] forKey:@"outputQuality"];
-	
+#endif	
 	  id obj = [useroptions valueForKey:@"importInAperture"];
 	  if (obj != nil)
 	  [standardUserDefaults setObject:obj

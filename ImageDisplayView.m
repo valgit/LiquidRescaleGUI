@@ -144,23 +144,23 @@
 
 - (void)mouseDown:(NSEvent*)event
 {
-  //      NSLog(@"%s",__PRETTY_FUNCTION__);
+        NSLog(@"%s",__PRETTY_FUNCTION__);
 }
 
 - (void)mouseMoved: (NSEvent*)event
 {
- //       NSLog(@"%s",__PRETTY_FUNCTION__);
+        NSLog(@"%s",__PRETTY_FUNCTION__);
 }
 
 - (void)mouseUp:(NSEvent *)event
 {
-//        NSLog(@"%s",__PRETTY_FUNCTION__);
+        NSLog(@"%s",__PRETTY_FUNCTION__);
 	NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
 }
 
 - (void)mouseDragged:(NSEvent*)event
 {
-//        NSLog(@"%s",__PRETTY_FUNCTION__);
+        NSLog(@"%s",__PRETTY_FUNCTION__);
 #if 0
     var newPoint = [event locationInWindow];
     newPoint.x -= mouseDownPoint.x;

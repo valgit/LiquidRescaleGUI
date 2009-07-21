@@ -3,7 +3,7 @@ include $(GNUSTEP_MAKEFILES)/common.make
 APP_NAME = LiquidRescaleGUI
 LiquidRescaleGUI_OBJC_FILES = LiquidRescaleController.m  main.m   \
 NSImage-ProportionalScaling.m NSFileManager-Extensions.m  \
-MLog.m 
+MLog.m ImageDisplayView.m ImagePanelView.m NSImage+Cropped.m
 
 LiquidRescaleGUI_MAIN_MODEL_FILE = MainMenu.nib
 
@@ -24,6 +24,9 @@ Add.tiff
 
 LiquidRescaleGUI_APPLICATION_ICON = GREYCstoration.png
 
+LiquidRescaleGUI_OBJC_LIBS = -llqr-1 -lglib-2.0
+LiquidRescaleGUI_LIB_DIRS+= -L./liblqr/lib
+LiquidRescaleGUI_INCLUDE_DIRS+= -I./liblqr/include/lqr-1 -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include
 
 include $(GNUSTEP_MAKEFILES)/application.make
 

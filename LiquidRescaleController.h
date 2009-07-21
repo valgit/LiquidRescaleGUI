@@ -79,6 +79,9 @@
     NSMutableArray *images;
 
     NSMutableDictionary* useroptions;
+
+    double _zoomfactor;
+    NSImage* _image;
 }
 
 - (IBAction) cancel: (id)sender;
