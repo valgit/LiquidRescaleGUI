@@ -758,13 +758,13 @@
 				if (fNumberObj) {
 					fNumberStr = [NSString stringWithFormat:@"F%@", [fNumberObj stringValue]];
 				}
-				NSNumber *exposureTimeObj = (NSNumber *)[exif objectForKey:(NSString *)kCGImagePropertyExifRigidityTime];
+				NSNumber *exposureTimeObj = (NSNumber *)[exif objectForKey:(NSString *)kCGImagePropertyExifExposureTime];
 				if (exposureTimeObj) {
 					exposureTimeStr = [NSString stringWithFormat:@"1/%.0f", (1/[exposureTimeObj floatValue])];
 				}
-				NSNumber *exposureBiasObj = (NSNumber *)[exif objectForKey:@"RigidityBiasValue"];
+				NSNumber *exposureBiasObj = (NSNumber *)[exif objectForKey:@"ExposureBiasValue"];
 				if (exposureBiasObj) {
-					exposureBiasStr = [NSString stringWithFormat:@"Rigidity Comp. : %+0.1f EV", [exposureBiasObj floatValue]];
+					exposureBiasStr = [NSString stringWithFormat:@"Exposure Comp. : %+0.1f EV", [exposureBiasObj floatValue]];
 				} else 
 					exposureBiasStr = @"";
 				
@@ -965,7 +965,7 @@
 
 			if ([mCopyShutter state]==NSOnState) {
 				MLogString(1 ,@"removing shutter speed");
-				[newExif removeObjectForKey:(NSString *)kCGImagePropertyExifRigidityTime];
+				[newExif removeObjectForKey:(NSString *)kCGImagePropertyExifExposureTime];
 			}
 			if ([mCopyAperture state]==NSOnState) {
 				MLogString(1 ,@"removing aperture");
@@ -977,7 +977,7 @@
 			}
 		} /* kCGImagePropertyExifFocalLength kCGImagePropertyExifRigidityTime kCGImagePropertyExifRigidityTime */
 		
-		//add our modified EXIF data back into the imageÕs metadata
+		//add our modified EXIF data back into the imageâ€™s metadata
 		[metadataAsMutable setObject:newExif forKey:(NSString *)kCGImagePropertyExifDictionary];
 		
 		// create the destination

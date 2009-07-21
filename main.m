@@ -1,9 +1,9 @@
 //
 //  main.m
-//  enfuseGUI
+//  LiquidRescaleGUI
 //
-//  Created by valery brasseur on 9/24/08.
-//  Copyright __MyCompanyName__ 2008. All rights reserved.
+//  Created by valery brasseur on 21/07/09.
+//  Copyright __MyCompanyName__ 2009. All rights reserved.
 //
 
 #import <Cocoa/Cocoa.h>

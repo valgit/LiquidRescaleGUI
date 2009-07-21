@@ -2,6 +2,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+@class ImagePanelView;
+@class ImageDisplayView;
+
 @interface LiquidRescaleController : NSObject 
 {
   IBOutlet NSWindow *window;
@@ -48,6 +51,10 @@
   // open file ?
   IBOutlet NSMatrix *mDoAfter;
   
+  IBOutlet ImagePanelView *_panelImageView;
+  IBOutlet ImageDisplayView *_imageView;
+  IBOutlet NSSlider *_zoomSlider;
+   
   // metadata ... 
   IBOutlet NSButton* mCopyMeta;
   IBOutlet NSButton* mCopyAperture;
@@ -74,35 +81,35 @@
     NSMutableDictionary* useroptions;
 }
 
-- (IBAction) cancel: (IBOutlet)sender;
-- (IBAction) reset: (IBOutlet)sender;
-- (IBAction) about: (IBOutlet)sender;
-- (IBAction) chooseOutputDirectory: (IBOutlet)sender;
-- (IBAction) quit: (IBOutlet)sender;
+- (IBAction) cancel: (id)sender;
+- (IBAction) reset: (id)sender;
+- (IBAction) about: (id)sender;
+- (IBAction) chooseOutputDirectory: (id)sender;
+- (IBAction) quit: (id)sender;
 
-- (IBAction) addImage: (IBOutlet)sender;
+- (IBAction) addImage: (id)sender;
 
-- (IBAction) takeSteps: (IBOutlet)sender;
-- (IBAction) takeRigidity: (IBOutlet)sender;
+- (IBAction) takeSteps: (id)sender;
+- (IBAction) takeRigidity: (id)sender;
 
-- (IBAction) takePercent: (IBOutlet)sender;
-- (IBAction) takeWidth: (IBOutlet)sender;
-- (IBAction) takeHeight: (IBOutlet)sender;
+- (IBAction) takePercent: (id)sender;
+- (IBAction) takeWidth: (id)sender;
+- (IBAction) takeHeight: (id)sender;
 
-- (IBAction) revealInFinder:(IBOutlet)sender;
+- (IBAction) revealInFinder:(id)sender;
 
-- (IBAction) LiquidRescale: (IBOutlet)sender;
+- (IBAction) LiquidRescale: (id)sender;
 
--(NSString*)outputfile;
--(void)setOutputfile:(NSString *)file;
--(NSString*)tempfile;
--(void)setTempfile:(NSString *)file;
--(NSString*)temppath;
--(void)setTempPath:(NSString *)file;
+-(NSString*) outputfile;
+-(void) setOutputfile:(NSString *)file;
+-(NSString*) tempfile;
+-(void) setTempfile:(NSString *)file;
+-(NSString*) temppath;
+-(void) setTempPath:(NSString *)file;
 
-- (IBAction)openPreferences:(id)sender;
+- (IBAction) openPreferences:(id)sender;
 
-- (IBAction) openPresets: (IBOutlet)sender;
-- (IBAction) savePresets: (IBOutlet)sender;
+- (IBAction) openPresets: (id)sender;
+- (IBAction) savePresets: (id)sender;
 
 @end

@@ -1,0 +1,352 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1A1877021015D2B8002EC52F /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = 1A1877001015D2B8002EC52F /* MainMenu.nib */; };
+		1A18770A1015D2EF002EC52F /* Add.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 1A1877061015D2EF002EC52F /* Add.tiff */; };
+		1A18770B1015D2EF002EC52F /* image_broken.png in Resources */ = {isa = PBXBuildFile; fileRef = 1A1877071015D2EF002EC52F /* image_broken.png */; };
+		1A18770C1015D2EF002EC52F /* Remove.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 1A1877081015D2EF002EC52F /* Remove.tiff */; };
+		1A18770D1015D2EF002EC52F /* update.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 1A1877091015D2EF002EC52F /* update.tiff */; };
+		1A18771A1015D314002EC52F /* CTProgressBadge.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A18770F1015D314002EC52F /* CTProgressBadge.m */; };
+		1A18771B1015D314002EC52F /* DKActionButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A1877101015D314002EC52F /* DKActionButtonCell.m */; };
+		1A18771C1015D314002EC52F /* DKActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A1877121015D314002EC52F /* DKActionButton.m */; };
+		1A18771D1015D314002EC52F /* NSImage+GTImageConversion.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A1877151015D314002EC52F /* NSImage+GTImageConversion.m */; };
+		1A18771E1015D314002EC52F /* NSImage-ProportionalScaling.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A1877161015D314002EC52F /* NSImage-ProportionalScaling.m */; };
+		1A18771F1015D314002EC52F /* NSFileManager-Extensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A1877191015D314002EC52F /* NSFileManager-Extensions.m */; };
+		1A1877221015D321002EC52F /* LiquidRescaleController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A1877211015D321002EC52F /* LiquidRescaleController.m */; };
+		1A18772C1015D3A7002EC52F /* MLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A18772A1015D3A7002EC52F /* MLog.m */; };
+		1A1877341015D495002EC52F /* ImageDisplayView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A1877311015D495002EC52F /* ImageDisplayView.m */; };
+		1A1877351015D495002EC52F /* ImagePanelView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A1877321015D495002EC52F /* ImagePanelView.m */; };
+		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
+		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
+		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
+		1A1877011015D2B8002EC52F /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/MainMenu.nib; sourceTree = "<group>"; };
+		1A1877061015D2EF002EC52F /* Add.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = Add.tiff; sourceTree = "<group>"; };
+		1A1877071015D2EF002EC52F /* image_broken.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = image_broken.png; sourceTree = "<group>"; };
+		1A1877081015D2EF002EC52F /* Remove.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = Remove.tiff; sourceTree = "<group>"; };
+		1A1877091015D2EF002EC52F /* update.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = update.tiff; sourceTree = "<group>"; };
+		1A18770E1015D314002EC52F /* CTProgressBadge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CTProgressBadge.h; sourceTree = "<group>"; };
+		1A18770F1015D314002EC52F /* CTProgressBadge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CTProgressBadge.m; sourceTree = "<group>"; };
+		1A1877101015D314002EC52F /* DKActionButtonCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DKActionButtonCell.m; sourceTree = "<group>"; };
+		1A1877111015D314002EC52F /* DKActionButtonCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DKActionButtonCell.h; sourceTree = "<group>"; };
+		1A1877121015D314002EC52F /* DKActionButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DKActionButton.m; sourceTree = "<group>"; };
+		1A1877131015D314002EC52F /* DKActionButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DKActionButton.h; sourceTree = "<group>"; };
+		1A1877141015D314002EC52F /* NSImage+GTImageConversion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSImage+GTImageConversion.h"; sourceTree = "<group>"; };
+		1A1877151015D314002EC52F /* NSImage+GTImageConversion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSImage+GTImageConversion.m"; sourceTree = "<group>"; };
+		1A1877161015D314002EC52F /* NSImage-ProportionalScaling.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSImage-ProportionalScaling.m"; sourceTree = "<group>"; };
+		1A1877171015D314002EC52F /* NSImage-ProportionalScaling.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSImage-ProportionalScaling.h"; sourceTree = "<group>"; };
+		1A1877181015D314002EC52F /* NSFileManager-Extensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFileManager-Extensions.h"; sourceTree = "<group>"; };
+		1A1877191015D314002EC52F /* NSFileManager-Extensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFileManager-Extensions.m"; sourceTree = "<group>"; };
+		1A1877201015D321002EC52F /* LiquidRescaleController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LiquidRescaleController.h; sourceTree = "<group>"; };
+		1A1877211015D321002EC52F /* LiquidRescaleController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LiquidRescaleController.m; sourceTree = "<group>"; };
+		1A18772A1015D3A7002EC52F /* MLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLog.m; sourceTree = "<group>"; };
+		1A18772B1015D3A7002EC52F /* MLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLog.h; sourceTree = "<group>"; };
+		1A1877301015D495002EC52F /* ImageDisplayView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageDisplayView.h; sourceTree = "<group>"; };
+		1A1877311015D495002EC52F /* ImageDisplayView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageDisplayView.m; sourceTree = "<group>"; };
+		1A1877321015D495002EC52F /* ImagePanelView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImagePanelView.m; sourceTree = "<group>"; };
+		1A1877331015D495002EC52F /* ImagePanelView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImagePanelView.h; sourceTree = "<group>"; };
+		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
+		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		32CA4F630368D1EE00C91783 /* LiquidRescaleGUI_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LiquidRescaleGUI_Prefix.pch; sourceTree = "<group>"; };
+		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8D1107320486CEB800E47090 /* LiquidRescaleGUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LiquidRescaleGUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8D11072E0486CEB800E47090 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		080E96DDFE201D6D7F000001 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				1A1877201015D321002EC52F /* LiquidRescaleController.h */,
+				1A1877211015D321002EC52F /* LiquidRescaleController.m */,
+				1A18772A1015D3A7002EC52F /* MLog.m */,
+				1A18772B1015D3A7002EC52F /* MLog.h */,
+				1A1877301015D495002EC52F /* ImageDisplayView.h */,
+				1A1877311015D495002EC52F /* ImageDisplayView.m */,
+				1A1877321015D495002EC52F /* ImagePanelView.m */,
+				1A1877331015D495002EC52F /* ImagePanelView.h */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
+		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
+			);
+			name = "Linked Frameworks";
+			sourceTree = "<group>";
+		};
+		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				29B97324FDCFA39411CA2CEA /* AppKit.framework */,
+				13E42FB307B3F0F600E4EEF1 /* CoreData.framework */,
+				29B97325FDCFA39411CA2CEA /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		19C28FACFE9D520D11CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8D1107320486CEB800E47090 /* LiquidRescaleGUI.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		29B97314FDCFA39411CA2CEA /* LiquidRescaleGUI */ = {
+			isa = PBXGroup;
+			children = (
+				080E96DDFE201D6D7F000001 /* Classes */,
+				29B97315FDCFA39411CA2CEA /* Other Sources */,
+				29B97317FDCFA39411CA2CEA /* Resources */,
+				29B97323FDCFA39411CA2CEA /* Frameworks */,
+				19C28FACFE9D520D11CA2CBB /* Products */,
+			);
+			name = LiquidRescaleGUI;
+			sourceTree = "<group>";
+		};
+		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				1A18770E1015D314002EC52F /* CTProgressBadge.h */,
+				1A18770F1015D314002EC52F /* CTProgressBadge.m */,
+				1A1877101015D314002EC52F /* DKActionButtonCell.m */,
+				1A1877111015D314002EC52F /* DKActionButtonCell.h */,
+				1A1877121015D314002EC52F /* DKActionButton.m */,
+				1A1877131015D314002EC52F /* DKActionButton.h */,
+				1A1877141015D314002EC52F /* NSImage+GTImageConversion.h */,
+				1A1877151015D314002EC52F /* NSImage+GTImageConversion.m */,
+				1A1877161015D314002EC52F /* NSImage-ProportionalScaling.m */,
+				1A1877171015D314002EC52F /* NSImage-ProportionalScaling.h */,
+				1A1877181015D314002EC52F /* NSFileManager-Extensions.h */,
+				1A1877191015D314002EC52F /* NSFileManager-Extensions.m */,
+				32CA4F630368D1EE00C91783 /* LiquidRescaleGUI_Prefix.pch */,
+				29B97316FDCFA39411CA2CEA /* main.m */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+		29B97317FDCFA39411CA2CEA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				1A1877001015D2B8002EC52F /* MainMenu.nib */,
+				1A1877061015D2EF002EC52F /* Add.tiff */,
+				1A1877071015D2EF002EC52F /* image_broken.png */,
+				1A1877081015D2EF002EC52F /* Remove.tiff */,
+				1A1877091015D2EF002EC52F /* update.tiff */,
+				8D1107310486CEB800E47090 /* Info.plist */,
+				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
+				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8D1107260486CEB800E47090 /* LiquidRescaleGUI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "LiquidRescaleGUI" */;
+			buildPhases = (
+				8D1107290486CEB800E47090 /* Resources */,
+				8D11072C0486CEB800E47090 /* Sources */,
+				8D11072E0486CEB800E47090 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LiquidRescaleGUI;
+			productInstallPath = "$(HOME)/Applications";
+			productName = LiquidRescaleGUI;
+			productReference = 8D1107320486CEB800E47090 /* LiquidRescaleGUI.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		29B97313FDCFA39411CA2CEA /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "LiquidRescaleGUI" */;
+			compatibilityVersion = "Xcode 3.1";
+			hasScannedForEncodings = 1;
+			mainGroup = 29B97314FDCFA39411CA2CEA /* LiquidRescaleGUI */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8D1107260486CEB800E47090 /* LiquidRescaleGUI */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8D1107290486CEB800E47090 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
+				1A1877021015D2B8002EC52F /* MainMenu.nib in Resources */,
+				1A18770A1015D2EF002EC52F /* Add.tiff in Resources */,
+				1A18770B1015D2EF002EC52F /* image_broken.png in Resources */,
+				1A18770C1015D2EF002EC52F /* Remove.tiff in Resources */,
+				1A18770D1015D2EF002EC52F /* update.tiff in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8D11072C0486CEB800E47090 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8D11072D0486CEB800E47090 /* main.m in Sources */,
+				1A18771A1015D314002EC52F /* CTProgressBadge.m in Sources */,
+				1A18771B1015D314002EC52F /* DKActionButtonCell.m in Sources */,
+				1A18771C1015D314002EC52F /* DKActionButton.m in Sources */,
+				1A18771D1015D314002EC52F /* NSImage+GTImageConversion.m in Sources */,
+				1A18771E1015D314002EC52F /* NSImage-ProportionalScaling.m in Sources */,
+				1A18771F1015D314002EC52F /* NSFileManager-Extensions.m in Sources */,
+				1A1877221015D321002EC52F /* LiquidRescaleController.m in Sources */,
+				1A18772C1015D3A7002EC52F /* MLog.m in Sources */,
+				1A1877341015D495002EC52F /* ImageDisplayView.m in Sources */,
+				1A1877351015D495002EC52F /* ImagePanelView.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		089C165CFE840E0CC02AAC07 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				089C165DFE840E0CC02AAC07 /* English */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		1A1877001015D2B8002EC52F /* MainMenu.nib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				1A1877011015D2B8002EC52F /* English */,
+			);
+			name = MainMenu.nib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		C01FCF4B08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = LiquidRescaleGUI_Prefix.pch;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = LiquidRescaleGUI;
+			};
+			name = Debug;
+		};
+		C01FCF4C08A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = LiquidRescaleGUI_Prefix.pch;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = LiquidRescaleGUI;
+			};
+			name = Release;
+		};
+		C01FCF4F08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx10.5;
+			};
+			name = Debug;
+		};
+		C01FCF5008A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx10.5;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "LiquidRescaleGUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4B08A954540054247B /* Debug */,
+				C01FCF4C08A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "LiquidRescaleGUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4F08A954540054247B /* Debug */,
+				C01FCF5008A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 29B97313FDCFA39411CA2CEA /* Project object */;
+}
