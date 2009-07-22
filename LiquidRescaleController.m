@@ -67,7 +67,7 @@ void libintl_dgettext()
 -(void)buildPreview;
 
 - (void) progress_init:(NSString*)message;
-- (void) progress_update:(double)percent;
+- (void) progress_update:(NSNumber*)percent;
 - (void) progress_end:(NSString*)message;
 
 @end
@@ -100,7 +100,8 @@ LqrRetVal my_progress_init(const gchar *message)
   LiquidRescaleController* controller = [ NSApp delegate];
   NSString *msgString = [[NSString alloc] initWithCString:message
                               encoding:NSASCIIStringEncoding];
-  [controller progress_init:msgString];
+  [controller performSelectorOnMainThread:@selector(progress_init:) withObject:msgString waitUntilDone:NO];
+  //[controller progress_init:msgString];
   [msgString release];
   return LQR_OK;
 }
@@ -108,8 +109,11 @@ LqrRetVal my_progress_init(const gchar *message)
 LqrRetVal my_progress_update(gdouble percentage)
 {
   //fprintf(stderr,"lqr: %.2f %%\n",100*percentage);
-  LiquidRescaleController* controller = [ NSApp delegate];
-  [controller progress_update:(100*percentage)];
+  LiquidRescaleController* controller = [ NSApp delegate]; 
+  NSNumber* percent = [NSNumber numberWithDouble:(100*percentage)];
+  [controller performSelectorOnMainThread:@selector(progress_update:) withObject:percent waitUntilDone:NO];
+  //NSLog(@"%s thread is : %@",__PRETTY_FUNCTION__,[NSThread currentThread]);
+  //[controller progress_update:percent];
   return LQR_OK;
 }
 
@@ -119,11 +123,19 @@ LqrRetVal my_progress_end(const gchar *message)
   LiquidRescaleController* controller = [ NSApp delegate];
   NSString *msgString = [[NSString alloc] initWithCString:message
                               encoding:NSASCIIStringEncoding];
-  [controller progress_end:msgString];
+  [controller performSelectorOnMainThread:@selector(progress_end:) withObject:msgString waitUntilDone:NO];
+  //[controller progress_end:msgString];
   [msgString release];
   return LQR_OK;
 }
 
+/*
+ * energy functions :
+ * LQR_EF_GRAD_XABS
+ * LQR_EF_GRAD_SUMABS
+ * LQR_EF_GRAD_NORM
+ * LQR_ER_BRIGHTNESS (sobel)
+ */
 
 @implementation LiquidRescaleController
 
@@ -181,6 +193,12 @@ LqrRetVal my_progress_end(const gchar *message)
         lqr_progress_set_init(progress, my_progress_init);
         lqr_progress_set_update(progress, my_progress_update);
         lqr_progress_set_end(progress, my_progress_end);
+
+	lqr_progress_set_init_width_message(progress, "Resizing width  :");
+	lqr_progress_set_init_height_message(progress, "Resizing height :");
+        lqr_progress_set_end_width_message(progress, "done");
+        lqr_progress_set_end_height_message(progress, "done");
+	lqr_progress_set_update_step(progress, 0.01);
 	
 	return self;
 }
@@ -432,8 +450,108 @@ LqrRetVal my_progress_end(const gchar *message)
 {
 	MLogString(1 ,@"");
 	[ NSApp stopModal ];
-	findRunning = NO;
+	cancelscaling = NO;
+	lqr_carver_cancel(carver);
+}
 
+- (void) startRescaling;
+{
+  MLogString(1 ,@"");	
+  //NSLog(@"%s thread is : %@",__PRETTY_FUNCTION__,[NSThread currentThread]);
+#if 1
+  [NSApp beginSheet: mProgressPanel
+        modalForWindow: window modalDelegate: nil
+        didEndSelector: nil contextInfo: nil ];
+  //[NSApp runModalForWindow: mProgressPanel ];
+#endif
+}
+
+- (void) endRescaling;
+{
+  MLogString(1 ,@"");	
+  //NSLog(@"%s thread is : %@",__PRETTY_FUNCTION__,[NSThread currentThread]);
+  [NSApp stopModal ];
+  [NSApp endSheet: mProgressPanel ];
+  [mProgressPanel orderOut: self ];
+  //[panel close];
+}
+
+// worker thread...
+- (void) lqrRescaling:(NSDictionary*)infos;
+{
+ // Since we are being spun off into a thread, we need our own auto-release pool
+  NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+  MLogString(1 ,@"");	
+  //NSLog(@"%s thread is : %@",__PRETTY_FUNCTION__,[NSThread currentThread]);
+
+  // TODO: get it from outside !
+  NSNumber* Width = (NSNumber *)[infos objectForKey:@"width"];
+  int width = [Width intValue];
+  NSNumber* Height = (NSNumber *)[infos objectForKey:@"height"];
+  int height = [Height intValue];
+
+  // Signal that we are ready to start so that our progress sheet is displayed
+  [self performSelectorOnMainThread:@selector(startRescaling) withObject:nil waitUntilDone:NO];
+
+  /**** (II) LIQUID RESCALE ****/
+  lqr_carver_resize(carver, width, height);
+
+       /**** (III) get the new data ****/
+          int w = lqr_carver_get_width(carver);
+          int h = lqr_carver_get_height(carver);
+          MLogString(1 ,@"resizing data (%d,%d,%d) ",w,h,lqr_carver_get_channels(carver));
+          // TODO: is it needed ?
+          if (lqr_carver_get_channels(carver) != 3) {
+                NSLog(@"bad channel number !");
+                return;
+          }
+
+          // create a new representation without the alpha plane ...
+         NSBitmapImageRep *destImageRep = [[[NSBitmapImageRep alloc]                                            
+                    initWithBitmapDataPlanes:NULL                                                               
+                                          pixelsWide:w                                                          
+                                          pixelsHigh:h                                                          
+                                          bitsPerSample:8 // [rep bitsPerSample]                                
+                                          samplesPerPixel:3                                                     
+                                        hasAlpha:NO                                                             
+                                        isPlanar:NO                                                             
+                                          colorSpaceName:NSCalibratedRGBColorSpace                              
+                                         bytesPerRow:0 // (spp*width)                                           
+                                        bitsPerPixel:24 ] autorelease];          
+
+        int destBpr = [destImageRep bytesPerRow];
+        int destspp = [destImageRep samplesPerPixel];
+        unsigned char* destpix = [destImageRep bitmapData];
+        NSLog(@"%s exporting photo Bpr = %d,  Spp = %d (alpha: %d)",__PRETTY_FUNCTION__,
+                        destBpr,destspp, [destImageRep hasAlpha] );
+
+        unsigned char *rgb;
+        int x,y;
+        lqr_carver_scan_reset(carver);
+        while (lqr_carver_scan(carver, &x, &y, &rgb)) {
+                unsigned char *q = (unsigned char *)(destpix + destBpr*y);
+                        q[destspp*x] = rgb[0]; // red
+                        q[destspp*x+1] = rgb[1]; // green
+                        q[destspp*x+2] = rgb[2];
+        }
+       //NSData *photoData = [destImageRep representationUsingType:NSTIFFFileType properties:NULL];
+     //   [photoData writeToFile:@"test.tif" atomically:YES];
+
+        NSImage *image = [[NSImage alloc] initWithSize:[destImageRep size]];
+        [image addRepresentation:destImageRep];
+
+        [_image release];
+        _image = image;
+        [_panelImageView reloadImage];
+
+        //TODO: should be done on release ?
+        /**** (IV) delete structures ? ****/
+
+   // Finally, signal that we are done so that the UI becomes active again.
+   [self performSelectorOnMainThread:@selector(endRescaling) withObject:nil waitUntilDone:NO];
+
+ // Clean out our auto release pool.
+  [pool release];
 }
 
 - (IBAction)LiquidRescale:(id)sender
@@ -492,60 +610,16 @@ LqrRetVal my_progress_end(const gchar *message)
 	  // TODO: bias and co here ...
 
 	  /**** (II) LIQUID RESCALE ****/
-	  lqr_carver_resize(carver, width, height);
+	  // And dispatch the operation to a background thread to avoid locking up the UI.
+          // detachNewThreadSelector:toTarget:withObject: will retain it's parameters so we don't have to.
+	  NSDictionary *infos = [NSDictionary dictionaryWithObjectsAndKeys:
+                [NSNumber numberWithInt:width], @"width",
+                [NSNumber numberWithInt:height], @"height",
+                nil];
 
-	  /**** (III) get the new data ****/
-	  int w = lqr_carver_get_width(carver);
-	  int h = lqr_carver_get_height(carver);
-	  MLogString(1 ,@"resizing data (%d,%d,%d) ",w,h,lqr_carver_get_channels(carver));
-	  // TODO: is it needed ?
-	  if (lqr_carver_get_channels(carver) != 3) {
-		NSLog(@"bad channel number !");
-		return;
-	  }
+	  //[self lqrRescaling:infos];
+	  [NSThread detachNewThreadSelector:@selector(lqrRescaling:) toTarget:self withObject:infos];
 
-          // create a new representation without the alpha plane ...
-	  NSBitmapImageRep *destImageRep = [[[NSBitmapImageRep alloc]
-                    initWithBitmapDataPlanes:NULL
-                                          pixelsWide:w
-                                          pixelsHigh:h
-                                          bitsPerSample:8 // [rep bitsPerSample]
-                                          samplesPerPixel:3
-                                        hasAlpha:NO
-                                        isPlanar:NO
-                                          colorSpaceName:NSCalibratedRGBColorSpace
-                                         bytesPerRow:0 // (spp*width)
-                                        bitsPerPixel:24 ] autorelease];
-
-        int destBpr = [destImageRep bytesPerRow];
-        int destspp = [destImageRep samplesPerPixel];
-        unsigned char* destpix = [destImageRep bitmapData];
-        NSLog(@"%s exporting photo Bpr = %d,  Spp = %d (alpha: %d)",__PRETTY_FUNCTION__,
-                        destBpr,destspp, [destImageRep hasAlpha] );
-
-        unsigned char *rgb;
-	int x,y;
-        lqr_carver_scan_reset(carver);
-	while (lqr_carver_scan(carver, &x, &y, &rgb)) {
-                unsigned char *q = (unsigned char *)(destpix + destBpr*y);
-                        q[destspp*x] = rgb[0]; // red
-                        q[destspp*x+1] = rgb[1]; // green
-                        q[destspp*x+2] = rgb[2];
-        }
-
-	//NSData *photoData = [destImageRep representationUsingType:NSTIFFFileType properties:NULL];
-     //   [photoData writeToFile:@"test.tif" atomically:YES];
-
-	NSImage *image = [[NSImage alloc] initWithSize:[destImageRep size]];
-        [image addRepresentation:destImageRep];
-
-	[_image release];
-	_image = image;
-	[_panelImageView reloadImage];
-
-	//TODO: should be done on release ?
-	/**** (IV) delete structures ? ****/
-        lqr_carver_destroy(carver);
 	} else
               NSRunCriticalAlertPanel ([[NSProcessInfo processInfo] processName],
 			NSLocalizedString(@"No Image Loaded",@""), 
@@ -858,7 +932,7 @@ LqrRetVal my_progress_end(const gchar *message)
 // If the user closes the search window, let's just quit
 -(BOOL)windowShouldClose:(id)sender
 {
-    if (findRunning == YES) {
+    if (cancelscaling == YES) {
 		//[LiquidRescaleTask stopProcess];
 		// Release the memory for this wrapper object
 		//[LiquidRescaleTask release];
@@ -1506,10 +1580,11 @@ LqrRetVal my_progress_end(const gchar *message)
 #endif
 }
 
-- (void) progress_update:(double)percent;
+- (void) progress_update:(NSNumber*)percent;
 {
-	//MLogString(1 ,@"percent: %f", percent);
-  [mProgressIndicator setDoubleValue:percent];
+	MLogString(1 ,@"percent: %@", percent);
+  [mProgressIndicator setDoubleValue:[percent doubleValue]];
+  //NSLog(@"%s thread is : %@",__PRETTY_FUNCTION__,[NSThread currentThread]);
 }
 
 
@@ -1519,10 +1594,11 @@ LqrRetVal my_progress_end(const gchar *message)
   [mProgressIndicator setDoubleValue:0];
   [mProgressIndicator stopAnimation:self];
   [mProgressText setStringValue:message];
-
+#if 0
   [ NSApp stopModal ];
   [ NSApp endSheet: mProgressPanel ];
   [ mProgressPanel orderOut: self ];
+#endif
 }
 
 @end

@@ -71,8 +71,7 @@
   IBOutlet NSImageView *mPreviewImage;
   
   @private
-    BOOL findRunning;
-    BOOL findRunningPreview;
+    BOOL cancelscaling;
 
     NSString* _outputfile;
     NSString* _tmpfile;
@@ -119,4 +118,5 @@
 - (IBAction) openPresets: (id)sender;
 - (IBAction) savePresets: (id)sender;
 
+- (void)setupImageSize;
 @end
