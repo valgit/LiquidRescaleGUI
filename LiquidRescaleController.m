@@ -17,7 +17,8 @@
 #include <math.h>
 #include "lqr.h"
 
-#define GET_TEXT 1
+// TODO: have the lib 
+//#define GET_TEXT 1
 #ifndef GET_TEXT
 void libintl_gettext()
 {
@@ -95,7 +96,7 @@ sobel(gint x, gint y, gint w, gint h, LqrReadingWindow *rw, gpointer extra_data)
 LqrRetVal my_progress_init(const gchar *message)
 {
 
-  fprintf(stderr,"lqr: <start> %s\n",message);
+  //fprintf(stderr,"lqr: <start> %s\n",message);
   LiquidRescaleController* controller = [ NSApp delegate];
   NSString *msgString = [[NSString alloc] initWithCString:message
                               encoding:NSASCIIStringEncoding];
@@ -106,15 +107,15 @@ LqrRetVal my_progress_init(const gchar *message)
 
 LqrRetVal my_progress_update(gdouble percentage)
 {
-  fprintf(stderr,"lqr: %.2f %%\n",100*percentage);
+  //fprintf(stderr,"lqr: %.2f %%\n",100*percentage);
   LiquidRescaleController* controller = [ NSApp delegate];
-  [controller progress_update:100*percentage];
+  [controller progress_update:(100*percentage)];
   return LQR_OK;
 }
 
 LqrRetVal my_progress_end(const gchar *message)
 {
-  fprintf(stderr,"lqr: <end> %s\n",message);
+  //fprintf(stderr,"lqr: <end> %s\n",message);
   LiquidRescaleController* controller = [ NSApp delegate];
   NSString *msgString = [[NSString alloc] initWithCString:message
                               encoding:NSASCIIStringEncoding];
@@ -947,6 +948,7 @@ LqrRetVal my_progress_end(const gchar *message)
 		MLogString(1 ,@"%@",fileName);
 		
 		NSImage* image;
+		//CFDataRef bits;
 		NSString *text;
 #ifdef GNUSTEP
 		// create and configure a new Image
@@ -992,9 +994,13 @@ LqrRetVal my_progress_end(const gchar *message)
 				
 				text = [NSString stringWithFormat:@"%@\n%@ / %@ @ %@\n%@", [fileName lastPathComponent],
 					focalLengthStr,exposureTimeStr,fNumberStr,exposureBiasStr];
-			} /* kCGImagePropertyExifFocalLength kCGImagePropertyExifRigidityTime kCGImagePropertyExifRigidityTime */
+				/* kCGImagePropertyExifFocalLength kCGImagePropertyExifRigidityTime kCGImagePropertyExifRigidityTime */
+			}  else {
+				text = @"no exif";
+			}
 			image = [self createThumbnail:source];
-			CFRelease(source);
+			//bits = CGDataProviderCopyData(CGImageGetDataProvider(source));
+			//CFRelease(source);
 			CFRelease(properties);
 		} else {
 			text = [fileName lastPathComponent];
@@ -1043,7 +1049,7 @@ LqrRetVal my_progress_end(const gchar *message)
 		// TODO: better interface ?
 		  // TODO: this part should be done on load ...
 #ifndef GNUSTEP
-		 _ NSBitmapImageRep *rep = [NSBitmapImageRep imageRepWithData:[_image TIFFRepresentation]];
+		  NSBitmapImageRep *rep = [NSBitmapImageRep imageRepWithData:[_image TIFFRepresentation]];
 		  if ([rep bitsPerSample] != 8) {
 			NSLog(@"unsupported bpp");
 		  }
@@ -1502,7 +1508,7 @@ LqrRetVal my_progress_end(const gchar *message)
 
 - (void) progress_update:(double)percent;
 {
-	MLogString(1 ,@"percent: %d", percent);
+	//MLogString(1 ,@"percent: %f", percent);
   [mProgressIndicator setDoubleValue:percent];
 }
 
