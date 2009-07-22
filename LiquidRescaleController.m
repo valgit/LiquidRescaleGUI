@@ -17,6 +17,8 @@
 #include <math.h>
 #include "lqr.h"
 
+#define GET_TEXT 1
+#ifndef GET_TEXT
 void libintl_gettext()
 {
 }
@@ -39,7 +41,7 @@ void libintl_dngettext()
 void libintl_dgettext()
 {
 }
-
+#endif
 
 #define LS_CANCEL NSLocalizedStringFromTable(@"Cancel",  @"cancel", "Button choice for cancel")
 #define LS_ERROR NSLocalizedStringFromTable(@"Error", @"error", @"title for error")
@@ -62,6 +64,10 @@ void libintl_dgettext()
 - (void) checkBeta;
 
 -(void)buildPreview;
+
+- (void) progress_init:(NSString*)message;
+- (void) progress_update:(double)percent;
+- (void) progress_end:(NSString*)message;
 
 @end
 
@@ -88,24 +94,38 @@ sobel(gint x, gint y, gint w, gint h, LqrReadingWindow *rw, gpointer extra_data)
 // TODO: better GUI here !
 LqrRetVal my_progress_init(const gchar *message)
 {
+
   fprintf(stderr,"lqr: <start> %s\n",message);
+  LiquidRescaleController* controller = [ NSApp delegate];
+  NSString *msgString = [[NSString alloc] initWithCString:message
+                              encoding:NSASCIIStringEncoding];
+  [controller progress_init:msgString];
+  [msgString release];
   return LQR_OK;
 }
 
 LqrRetVal my_progress_update(gdouble percentage)
 {
   fprintf(stderr,"lqr: %.2f %%\n",100*percentage);
+  LiquidRescaleController* controller = [ NSApp delegate];
+  [controller progress_update:100*percentage];
   return LQR_OK;
 }
 
 LqrRetVal my_progress_end(const gchar *message)
 {
   fprintf(stderr,"lqr: <end> %s\n",message);
+  LiquidRescaleController* controller = [ NSApp delegate];
+  NSString *msgString = [[NSString alloc] initWithCString:message
+                              encoding:NSASCIIStringEncoding];
+  [controller progress_end:msgString];
+  [msgString release];
   return LQR_OK;
 }
 
 
 @implementation LiquidRescaleController
+
 
 #pragma mark -
 #pragma mark init & dealloc
@@ -154,6 +174,12 @@ LqrRetVal my_progress_end(const gchar *message)
 	
 	images = [[NSMutableArray alloc] init];
 	useroptions = [[NSMutableDictionary alloc] initWithCapacity:5];
+
+	// Create a progress object
+	progress = lqr_progress_new();
+        lqr_progress_set_init(progress, my_progress_init);
+        lqr_progress_set_update(progress, my_progress_update);
+        lqr_progress_set_end(progress, my_progress_end);
 	
 	return self;
 }
@@ -434,32 +460,11 @@ LqrRetVal my_progress_end(const gchar *message)
 	  if([mPreserveSkinTonesButton state]==NSOnState) {
 		MLogString(1 ,@"preserving skin tones");
 	  }
-	  // TODO: better interface ?
-	  // TODO: this part should be done on load ...
-	  NSBitmapImageRep *rep = [NSBitmapImageRep imageRepWithData:[_image TIFFRepresentation]];
-	  if ([rep bitsPerSample] != 8) {
-                NSLog(@"unsupported bpp");
-	  }
-	  int x,y;
-          int             Bpr =[rep bytesPerRow];
-          int             spp =[rep samplesPerPixel];
-          int             w =[rep pixelsWide];
-          int             h =[rep pixelsHigh];
-          unsigned char  *pixels =[rep bitmapData];
-
-	  unsigned char* img_bits = (unsigned char*)malloc(w*h*3);
-          for (y=0; y<h; y++) {
-               unsigned char *p = (unsigned char *)(pixels + Bpr*y);
-               unsigned char* _imptr = img_bits + y * w * 3;
-               for (x=0; x<w; x++/*,p+=spp*/) {
-                        // maybe we should use the alpha plane here ...
-                        _imptr[3*x] = p[3*x];
-                        _imptr[3*x+1] =p[3*x+1];
-                        _imptr[3*x+2] = p[3*x+2];
-               }
-           }
 
 	  if ([mPercentSlider doubleValue] <100.0) { // mixed rescale 
+		NSSize imSize = [_image size];
+		int w = imSize.width;
+		int h = imSize.height;
 		double stdRescaleP = (100.0 - [mPercentSlider doubleValue]) / 100.0;
 		int diff_w         = (int)(stdRescaleP * (w - width));
 		int diff_h         = (int)(stdRescaleP * (h - height));
@@ -468,18 +473,6 @@ LqrRetVal my_progress_end(const gchar *message)
 		MLogString(1 ,@"mix resize with (%d,%d) -> (%d,%d) ",diff_w,diff_h,
 			w - diff_w, h - diff_h);
 	  }
-	 /* (I.1) swallow the buffer in a (minimal) LqrCarver object
-	  *       (arguments are width, height and number of colour channels) */
-	 LqrCarver *carver;
-	 carver = lqr_carver_new(img_bits, w, h, 3);
-
-	 // Create a progress object
-	 LqrProgress *progress;
-
-	 progress = lqr_progress_new();
-	 lqr_progress_set_init(progress, my_progress_init);
-	 lqr_progress_set_update(progress, my_progress_update);
-	 lqr_progress_set_end(progress, my_progress_end);
 
 	  /* (I.2) initialize the carver (with default values),
 	   *          so that we can do the resizing */
@@ -501,8 +494,8 @@ LqrRetVal my_progress_end(const gchar *message)
 	  lqr_carver_resize(carver, width, height);
 
 	  /**** (III) get the new data ****/
-	  w = lqr_carver_get_width(carver);
-	  h = lqr_carver_get_height(carver);
+	  int w = lqr_carver_get_width(carver);
+	  int h = lqr_carver_get_height(carver);
 	  MLogString(1 ,@"resizing data (%d,%d,%d) ",w,h,lqr_carver_get_channels(carver));
 	  // TODO: is it needed ?
 	  if (lqr_carver_get_channels(carver) != 3) {
@@ -526,10 +519,11 @@ LqrRetVal my_progress_end(const gchar *message)
         int destBpr = [destImageRep bytesPerRow];
         int destspp = [destImageRep samplesPerPixel];
         unsigned char* destpix = [destImageRep bitmapData];
-        NSLog(@"%s exporting photo Bpr = %d, %d,  Spp = %d,%d (alpha: %d) %d %d",__PRETTY_FUNCTION__,
-                        Bpr,destBpr,spp,destspp, [destImageRep hasAlpha],[rep bitsPerSample],[rep bitsPerPixel]);
+        NSLog(@"%s exporting photo Bpr = %d,  Spp = %d (alpha: %d)",__PRETTY_FUNCTION__,
+                        destBpr,destspp, [destImageRep hasAlpha] );
 
         unsigned char *rgb;
+	int x,y;
         lqr_carver_scan_reset(carver);
 	while (lqr_carver_scan(carver, &x, &y, &rgb)) {
                 unsigned char *q = (unsigned char *)(destpix + destBpr*y);
@@ -547,6 +541,7 @@ LqrRetVal my_progress_end(const gchar *message)
 	[_image release];
 	_image = image;
 	[_panelImageView reloadImage];
+
 	//TODO: should be done on release ?
 	/**** (IV) delete structures ? ****/
         lqr_carver_destroy(carver);
@@ -876,10 +871,10 @@ LqrRetVal my_progress_end(const gchar *message)
 - (void)setupImageSize;
 {
         NSSize imSize = [_image size];
-	[mHeightSlider setMaxValue:imSize.height];
+	[mHeightSlider setMaxValue:2*imSize.height];
 	[mHeightSlider setFloatValue:imSize.height]; //
 	[self takeHeight:mHeightSlider];
-	[mWidthSlider setMaxValue:imSize.width];
+	[mWidthSlider setMaxValue:2*imSize.width];
 	[mWidthSlider setFloatValue:imSize.width]; //
 	[self takeWidth:mWidthSlider];
 }
@@ -958,7 +953,8 @@ LqrRetVal my_progress_end(const gchar *message)
 		image =[[NSImage alloc] initWithContentsOfFile:fileName];
 		// create a meaning full info ...
 
-		NSBitmapImageRep *rep =[image bestRepresentationForDevice:nil];
+		//NSBitmapImageRep *rep =[image bestRepresentationForDevice:nil];
+		NSBitmapImageRep *rep = [NSBitmapImageRep imageRepWithData:[image TIFFRepresentation]];
 		NSMutableDictionary *exifDict =  [rep valueForProperty:@"NSImageEXIFData"];
 #else
 		
@@ -1043,12 +1039,39 @@ LqrRetVal my_progress_end(const gchar *message)
 		[self setupImageSize];
 		//[newImage release]; // memory bug ?
 		[_panelImageView reloadImage];
+
+		// TODO: better interface ?
+		  // TODO: this part should be done on load ...
+#ifndef GNUSTEP
+		 _ NSBitmapImageRep *rep = [NSBitmapImageRep imageRepWithData:[_image TIFFRepresentation]];
+		  if ([rep bitsPerSample] != 8) {
+			NSLog(@"unsupported bpp");
+		  }
+#endif
+		  int x,y;
+		  int             Bpr =[rep bytesPerRow];
+		  int             spp =[rep samplesPerPixel];
+		  int             w =[rep pixelsWide];
+		  int             h =[rep pixelsHigh];
+		  unsigned char  *pixels =[rep bitmapData];
+
+		  unsigned char* img_bits = (unsigned char*)malloc(w*h*3);
+		  for (y=0; y<h; y++) {
+		       unsigned char *p = (unsigned char *)(pixels + Bpr*y);
+		       unsigned char* _imptr = img_bits + y * w * 3;
+		       for (x=0; x<w; x++/*,p+=spp*/) {
+				// maybe we should use the alpha plane here ...
+				_imptr[3*x] = p[3*x];
+				_imptr[3*x+1] =p[3*x+1];
+				_imptr[3*x+2] = p[3*x+2];
+		       }
+		   }
+
+		/* (I.1) swallow the buffer in a (minimal) LqrCarver object
+		  *       (arguments are width, height and number of colour channels) */
+		carver = lqr_carver_new(img_bits, w, h, 3);
 		}
-		
-		
 	}
-	
-	
 }
 
 
@@ -1457,6 +1480,43 @@ LqrRetVal my_progress_end(const gchar *message)
 		   [args addObject:[obj valueForKey:@"thumbfile"]];
 	   }
         }
+}
+
+- (void) progress_init:(NSString*)message;
+{
+	MLogString(1 ,@"msg: %@", message);
+  [mProgressIndicator setUsesThreadedAnimation:YES];
+  //[mProgressIndicator setIndeterminate:YES];
+  [mProgressIndicator setDoubleValue:0.0];
+  [mProgressIndicator setMaxValue:100.0]; 
+  [mProgressIndicator startAnimation:self];
+  [mProgressText setStringValue:message];
+#if 0
+  // show the progress sheet
+  [ NSApp beginSheet: mProgressPanel
+        modalForWindow: window modalDelegate: nil
+        didEndSelector: nil contextInfo: nil ];
+  [ NSApp runModalForWindow: mProgressPanel ];
+#endif
+}
+
+- (void) progress_update:(double)percent;
+{
+	MLogString(1 ,@"percent: %d", percent);
+  [mProgressIndicator setDoubleValue:percent];
+}
+
+
+- (void) progress_end:(NSString*)message;
+{
+	MLogString(1 ,@"msg: %@", message);
+  [mProgressIndicator setDoubleValue:0];
+  [mProgressIndicator stopAnimation:self];
+  [mProgressText setStringValue:message];
+
+  [ NSApp stopModal ];
+  [ NSApp endSheet: mProgressPanel ];
+  [ mProgressPanel orderOut: self ];
 }
 
 @end

@@ -5,6 +5,8 @@
 @class ImagePanelView;
 @class ImageDisplayView;
 
+#include <lqr.h>
+
 @interface LiquidRescaleController : NSObject 
 {
   IBOutlet NSWindow *window;
@@ -82,6 +84,8 @@
 
     double _zoomfactor;
     NSImage* _image;
+    LqrCarver *carver;
+    LqrProgress *progress;
 }
 
 - (IBAction) cancel: (id)sender;
