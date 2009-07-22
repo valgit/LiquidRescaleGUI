@@ -17,6 +17,30 @@
 #include <math.h>
 #include "lqr.h"
 
+void libintl_gettext()
+{
+}
+
+void libintl_bind_textdomain_codeset()
+{
+}
+
+void libintl_bindtextdomain()
+{
+}
+void libintl_textdomain()
+{
+}
+
+void libintl_dngettext()
+{
+}
+
+void libintl_dgettext()
+{
+}
+
+
 #define LS_CANCEL NSLocalizedStringFromTable(@"Cancel",  @"cancel", "Button choice for cancel")
 #define LS_ERROR NSLocalizedStringFromTable(@"Error", @"error", @"title for error")
 #define LS_CONTINUE NSLocalizedStringFromTable(@"Continue", @"continue", @"Button choice for continue")
@@ -118,9 +142,9 @@ LqrRetVal my_progress_end(const gchar *message)
 	//[mPreviewImage setImage:_image];
 	[self setZoomFactor:100.0];
 	// TODO: missing links !!
-	[_panelImageView setDataSource:self];
-	[_panelImageView setDelegate:self];
-	[[NSApplication sharedApplication] setDelegate:self];
+	//[_panelImageView setDataSource:self];
+	//[_panelImageView setDelegate:self];
+	//[[NSApplication sharedApplication] setDelegate:self];
 }
 
 - (id)init
@@ -292,7 +316,7 @@ LqrRetVal my_progress_end(const gchar *message)
 // 
 -(void)insertObject:(id)obj inImagesAtIndex:(unsigned)index;
 {
-	MLogString(1 ,@"obj is : %@",obj);
+	//MLogString(1 ,@"obj is : %@",obj);
 	[images insertObject: obj  atIndex: index];
 }
 
@@ -425,13 +449,13 @@ LqrRetVal my_progress_end(const gchar *message)
 
 	  unsigned char* img_bits = (unsigned char*)malloc(w*h*3);
           for (y=0; y<h; y++) {
-               unsigned short *p = (unsigned short *)(pixels + Bpr*y);
+               unsigned char *p = (unsigned char *)(pixels + Bpr*y);
                unsigned char* _imptr = img_bits + y * w * 3;
-               for (x=0; x<w; x++,p+=spp) {
+               for (x=0; x<w; x++/*,p+=spp*/) {
                         // maybe we should use the alpha plane here ...
-                        _imptr[3*x] = *p;
-                        _imptr[3*x+1] = *(p+1);
-                        _imptr[3*x+2] = *(p+2);
+                        _imptr[3*x] = p[3*x];
+                        _imptr[3*x+1] =p[3*x+1];
+                        _imptr[3*x+2] = p[3*x+2];
                }
            }
 
@@ -508,20 +532,21 @@ LqrRetVal my_progress_end(const gchar *message)
         unsigned char *rgb;
         lqr_carver_scan_reset(carver);
 	while (lqr_carver_scan(carver, &x, &y, &rgb)) {
-                unsigned char *q = (unsigned char *)(destpix + destBpr*y + destspp*x);
-                        //*q = rgb[0]; // red
-                        *(q+1) = rgb[1];
-                        //*(q+2) = rgb[2];
+                unsigned char *q = (unsigned char *)(destpix + destBpr*y);
+                        q[destspp*x] = rgb[0]; // red
+                        q[destspp*x+1] = rgb[1]; // green
+                        q[destspp*x+2] = rgb[2];
         }
 
-	NSData *photoData = [destImageRep representationUsingType:NSTIFFFileType properties:NULL];
-        [photoData writeToFile:@"test.tif" atomically:YES];
+	//NSData *photoData = [destImageRep representationUsingType:NSTIFFFileType properties:NULL];
+     //   [photoData writeToFile:@"test.tif" atomically:YES];
 
 	NSImage *image = [[NSImage alloc] initWithSize:[destImageRep size]];
         [image addRepresentation:destImageRep];
 
 	[_image release];
 	_image = image;
+	[_panelImageView reloadImage];
 	//TODO: should be done on release ?
 	/**** (IV) delete structures ? ****/
         lqr_carver_destroy(carver);
@@ -1014,9 +1039,10 @@ LqrRetVal my_progress_end(const gchar *message)
 		[mImageArrayCtrl addObject:newImage];
 #endif
 		//[self buildPreview];
-		_image = image;
+		_image = [[NSImage alloc] initWithContentsOfFile:fileName];//[image retain];
 		[self setupImageSize];
 		//[newImage release]; // memory bug ?
+		[_panelImageView reloadImage];
 		}
 		
 		

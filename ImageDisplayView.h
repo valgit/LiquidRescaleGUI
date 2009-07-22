@@ -13,6 +13,8 @@
 - (id)initWithFrame:(NSRect)frame;
 
 -(void)setImage:(NSImage*)image;
+- (void)reloadImage;
+
 - (void)setBackgroundColor:(NSColor*)color;
 - (NSImage*)image;
 - (NSColor*)backgroundColor;

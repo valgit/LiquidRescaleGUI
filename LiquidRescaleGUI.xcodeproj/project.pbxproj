@@ -22,6 +22,10 @@
 		1A18772C1015D3A7002EC52F /* MLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A18772A1015D3A7002EC52F /* MLog.m */; };
 		1A1877341015D495002EC52F /* ImageDisplayView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A1877311015D495002EC52F /* ImageDisplayView.m */; };
 		1A1877351015D495002EC52F /* ImagePanelView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A1877321015D495002EC52F /* ImagePanelView.m */; };
+		1A71133C1016C47300E4012D /* NSImage+Cropped.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A71133B1016C47300E4012D /* NSImage+Cropped.m */; };
+		1AE5FB78101664CA00E4D78C /* liblqr-1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AE5FB77101664CA00E4D78C /* liblqr-1.a */; };
+		1AE5FB7C101664EB00E4D78C /* libglib-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AE5FB7B101664EB00E4D78C /* libglib-2.0.a */; };
+		1AE5FB7F1016659300E4D78C /* libiconv.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AE5FB7E1016659300E4D78C /* libiconv.dylib */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
@@ -56,6 +60,11 @@
 		1A1877311015D495002EC52F /* ImageDisplayView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageDisplayView.m; sourceTree = "<group>"; };
 		1A1877321015D495002EC52F /* ImagePanelView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImagePanelView.m; sourceTree = "<group>"; };
 		1A1877331015D495002EC52F /* ImagePanelView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImagePanelView.h; sourceTree = "<group>"; };
+		1A71133A1016C47300E4012D /* NSImage+Cropped.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSImage+Cropped.h"; sourceTree = "<group>"; };
+		1A71133B1016C47300E4012D /* NSImage+Cropped.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSImage+Cropped.m"; sourceTree = "<group>"; };
+		1AE5FB77101664CA00E4D78C /* liblqr-1.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "liblqr-1.a"; path = "osxlibs/lib/liblqr-1.a"; sourceTree = "<group>"; };
+		1AE5FB7B101664EB00E4D78C /* libglib-2.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libglib-2.0.a"; path = "osxlibs/lib/libglib-2.0.a"; sourceTree = "<group>"; };
+		1AE5FB7E1016659300E4D78C /* libiconv.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.dylib; path = /usr/lib/libiconv.dylib; sourceTree = "<absolute>"; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
@@ -70,6 +79,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
+				1AE5FB78101664CA00E4D78C /* liblqr-1.a in Frameworks */,
+				1AE5FB7C101664EB00E4D78C /* libglib-2.0.a in Frameworks */,
+				1AE5FB7F1016659300E4D78C /* libiconv.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,6 +106,9 @@
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1AE5FB7B101664EB00E4D78C /* libglib-2.0.a */,
+				1AE5FB77101664CA00E4D78C /* liblqr-1.a */,
+				1AE5FB7E1016659300E4D78C /* libiconv.dylib */,
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
 			);
 			name = "Linked Frameworks";
@@ -142,6 +157,8 @@
 				1A1877151015D314002EC52F /* NSImage+GTImageConversion.m */,
 				1A1877161015D314002EC52F /* NSImage-ProportionalScaling.m */,
 				1A1877171015D314002EC52F /* NSImage-ProportionalScaling.h */,
+				1A71133A1016C47300E4012D /* NSImage+Cropped.h */,
+				1A71133B1016C47300E4012D /* NSImage+Cropped.m */,
 				1A1877181015D314002EC52F /* NSFileManager-Extensions.h */,
 				1A1877191015D314002EC52F /* NSFileManager-Extensions.m */,
 				32CA4F630368D1EE00C91783 /* LiquidRescaleGUI_Prefix.pch */,
@@ -243,6 +260,7 @@
 				1A18772C1015D3A7002EC52F /* MLog.m in Sources */,
 				1A1877341015D495002EC52F /* ImageDisplayView.m in Sources */,
 				1A1877351015D495002EC52F /* ImagePanelView.m in Sources */,
+				1A71133C1016C47300E4012D /* NSImage+Cropped.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -281,6 +299,10 @@
 				GCC_PREFIX_HEADER = LiquidRescaleGUI_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/osxlibs/lib\"",
+				);
 				PRODUCT_NAME = LiquidRescaleGUI;
 			};
 			name = Debug;
@@ -295,6 +317,10 @@
 				GCC_PREFIX_HEADER = LiquidRescaleGUI_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/osxlibs/lib\"",
+				);
 				PRODUCT_NAME = LiquidRescaleGUI;
 			};
 			name = Release;
@@ -307,6 +333,11 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"osxlibs/include/glib-2.0",
+					"osxlibs/include/lqr-1",
+				);
+				LIBRARY_SEARCH_PATHS = osxlibs/lib;
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
 				SDKROOT = macosx10.5;

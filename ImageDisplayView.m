@@ -33,6 +33,11 @@
     [self setNeedsDisplay:YES];
 }
 
+- (void)reloadImage;
+{
+	[self setNeedsDisplay:YES];
+}
+
 - (void)setBackgroundColor:(NSColor*)color
 {
     NSColor *temp = [color retain];

@@ -39,6 +39,11 @@
     return _bgColor;
 }
 
+- (void)reloadImage;
+{
+	[self setNeedsDisplay:YES];
+}
+
 - (void)drawRect:(NSRect)rect;
 {
      NSRect bounds = [self bounds];

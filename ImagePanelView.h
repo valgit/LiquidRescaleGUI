@@ -31,6 +31,8 @@
 - (void)setBackgroundColor:(NSColor*)color;
 - (NSColor*)backgroundColor;
 
+- (void)reloadImage;
+
 #pragma mark <Delegate and Data Source Handling>
 - (void) selectionDidChange;
 
