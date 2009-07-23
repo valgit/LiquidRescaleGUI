@@ -1158,6 +1158,34 @@ LqrRetVal my_progress_end(const gchar *message)
 #pragma mark -
 #pragma mark TODO
 
+#if 0
+// TODO: create real code here !
+- (IBAction)saveImage;
+{
+#if 0
+if([extension isEqualTo:@"jpg"]||[extension isEqualTo:@"jpeg"])
+                imageData = [imageRep representationUsingType:NSJPEGFileType properties:nil];
+        else if([extension isEqualTo:@"tif"]||[extension isEqualTo:@"tiff"])
+                imageData = [imageRep representationUsingType:NSTIFFFileType properties:nil];
+        else if([extension isEqualTo:@"bmp"])
+                imageData = [imageRep representationUsingType:NSBMPFileType properties:nil];
+        else if([extension isEqualTo:@"png"])
+                imageData = [imageRep representationUsingType:NSPNGFileType properties:nil];
+        else if([extension isEqualTo:@"gif"])
+                imageData = [imageRep representationUsingType:NSGIFFileType properties:nil];
+#endif
+        //[props setObject:[NSNumber numberWithFloat:0.9] forKey:NSImageCompressionFactor];
+        //NSMutableDictionary *props = [NSMutableDictionary dictionaryWithObject:[NSNumber numberWithFloat:0.9]
+        //                              forKey:NSImageCompressionFactor];
+        //[props setObject:exifDict forKey:NSImageEXIFData];
+        //NSData *photoData = [destImageRep representationUsingType:NSJPEGFileType properties:props];
+	// NSImageColorSyncProfileData
+        NSData *photoData = [destImageRep representationUsingType:NSTIFFFileType properties:NULL];
+        [photoData writeToFile:@"test.tif" atomically:YES];
+
+}
+#endif
+
 -(NSString*)outputfile;
 {
 	return _outputfile;
