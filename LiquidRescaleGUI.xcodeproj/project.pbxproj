@@ -351,6 +351,11 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"osxlibs/include/glib-2.0",
+					"osxlibs/include/lqr-1",
+				);
+				LIBRARY_SEARCH_PATHS = osxlibs/lib;
 				PREBINDING = NO;
 				SDKROOT = macosx10.5;
 			};

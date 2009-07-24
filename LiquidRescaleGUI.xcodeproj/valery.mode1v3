@@ -197,84 +197,7 @@
 	<key>Notifications</key>
 	<array/>
 	<key>OpenEditors</key>
-	<array>
-		<dict>
-			<key>Content</key>
-			<dict>
-				<key>PBXProjectModuleGUID</key>
-				<string>1A35881010172AF20037C5BE</string>
-				<key>PBXProjectModuleLabel</key>
-				<string>LiquidRescaleController.m</string>
-				<key>PBXSplitModuleInNavigatorKey</key>
-				<dict>
-					<key>Split0</key>
-					<dict>
-						<key>PBXProjectModuleGUID</key>
-						<string>1A35881110172AF20037C5BE</string>
-						<key>PBXProjectModuleLabel</key>
-						<string>LiquidRescaleController.m</string>
-						<key>_historyCapacity</key>
-						<integer>0</integer>
-						<key>bookmark</key>
-						<string>1A35882310172B600037C5BE</string>
-						<key>history</key>
-						<array>
-							<string>1A358808101728AD0037C5BE</string>
-						</array>
-					</dict>
-					<key>SplitCount</key>
-					<string>1</string>
-				</dict>
-				<key>StatusBarVisibility</key>
-				<true/>
-			</dict>
-			<key>Geometry</key>
-			<dict>
-				<key>Frame</key>
-				<string>{{0, 20}, {1057, 649}}</string>
-				<key>PBXModuleWindowStatusBarHidden2</key>
-				<false/>
-				<key>RubberWindowFrame</key>
-				<string>166 130 1057 690 0 0 1440 878 </string>
-			</dict>
-		</dict>
-		<dict>
-			<key>Content</key>
-			<dict>
-				<key>PBXProjectModuleGUID</key>
-				<string>1A71137A1016D5C400E4012D</string>
-				<key>PBXProjectModuleLabel</key>
-				<string>LiquidRescaleController.m</string>
-				<key>PBXSplitModuleInNavigatorKey</key>
-				<dict>
-					<key>Split0</key>
-					<dict>
-						<key>PBXProjectModuleGUID</key>
-						<string>1A71137B1016D5C400E4012D</string>
-						<key>PBXProjectModuleLabel</key>
-						<string>LiquidRescaleController.m</string>
-						<key>history</key>
-						<array>
-							<string>1A71137C1016D5C400E4012D</string>
-						</array>
-					</dict>
-					<key>SplitCount</key>
-					<string>1</string>
-				</dict>
-				<key>StatusBarVisibility</key>
-				<true/>
-			</dict>
-			<key>Geometry</key>
-			<dict>
-				<key>Frame</key>
-				<string>{{0, 20}, {1057, 649}}</string>
-				<key>PBXModuleWindowStatusBarHidden2</key>
-				<false/>
-				<key>RubberWindowFrame</key>
-				<string>166 130 1057 690 0 0 1440 878 </string>
-			</dict>
-		</dict>
-	</array>
+	<array/>
 	<key>PerspectiveWidths</key>
 	<array>
 		<integer>-1</integer>
@@ -305,6 +228,8 @@
 			<key>Layout</key>
 			<array>
 				<dict>
+					<key>BecomeActive</key>
+					<true/>
 					<key>ContentConfiguration</key>
 					<dict>
 						<key>PBXBottomSmartGroupGIDs</key>
@@ -342,12 +267,13 @@
 							<array>
 								<string>29B97314FDCFA39411CA2CEA</string>
 								<string>29B97315FDCFA39411CA2CEA</string>
+								<string>29B97323FDCFA39411CA2CEA</string>
+								<string>1058C7A0FEA54F0111CA2CBB</string>
 								<string>1C37FABC05509CD000000102</string>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
-									<integer>1</integer>
 									<integer>0</integer>
 								</array>
 							</array>
@@ -387,7 +313,7 @@
 								<key>PBXProjectModuleGUID</key>
 								<string>1CE0B20306471E060097A5F4</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>LiquidRescaleController.m</string>
+								<string>LiquidRescaleController.h</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
@@ -395,11 +321,11 @@
 										<key>PBXProjectModuleGUID</key>
 										<string>1CE0B20406471E060097A5F4</string>
 										<key>PBXProjectModuleLabel</key>
-										<string>LiquidRescaleController.m</string>
+										<string>LiquidRescaleController.h</string>
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>1A35882210172B600037C5BE</string>
+										<string>1AC1FFEA101978EE00802EBD</string>
 										<key>history</key>
 										<array>
 											<string>1AE5FB391016630800E4D78C</string>
@@ -408,10 +334,10 @@
 											<string>1A7113601016D5C400E4012D</string>
 											<string>1A7113611016D5C400E4012D</string>
 											<string>1A7113621016D5C400E4012D</string>
-											<string>1A7113631016D5C400E4012D</string>
 											<string>1A7113641016D5C400E4012D</string>
 											<string>1A35880B10172AF20037C5BE</string>
-											<string>1A35880C10172AF20037C5BE</string>
+											<string>1AC1FFB31019756C00802EBD</string>
+											<string>1AC1FFD41019779B00802EBD</string>
 										</array>
 										<key>prevStack</key>
 										<array>
@@ -424,7 +350,6 @@
 											<string>1A7113681016D5C400E4012D</string>
 											<string>1A7113691016D5C400E4012D</string>
 											<string>1A7113731016D5C400E4012D</string>
-											<string>1A35880D10172AF20037C5BE</string>
 											<string>1A35880E10172AF20037C5BE</string>
 										</array>
 									</dict>
@@ -447,8 +372,6 @@
 							<string>344pt</string>
 						</dict>
 						<dict>
-							<key>BecomeActive</key>
-							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
@@ -485,9 +408,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>1A3587DC1017252C0037C5BE</string>
+				<string>1AC1FFE8101978EE00802EBD</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>1A3587DD1017252C0037C5BE</string>
+				<string>1AC1FFE9101978EE00802EBD</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -621,13 +544,8 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
-		<string>1A3587DF1017252C0037C5BE</string>
-		<string>1A3587E01017252C0037C5BE</string>
-		<string>1C78EAAD065D492600B07095</string>
 		<string>1A1877281015D3A0002EC52F</string>
-		<string>1CD10A99069EF8BA00B06720</string>
 		<string>/Users/valery/Documents/Cocoa/LiquidRescaleGUI/LiquidRescaleGUI.xcodeproj</string>
-		<string>1A35881010172AF20037C5BE</string>
 	</array>
 	<key>WindowString</key>
 	<string>226 157 1066 649 0 0 1440 878 </string>
@@ -646,14 +564,12 @@
 					<key>Dock</key>
 					<array>
 						<dict>
-							<key>BecomeActive</key>
-							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
 								<string>1CD0528F0623707200166675</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>LiquidRescaleController.m</string>
+								<string></string>
 								<key>StatusBarVisibility</key>
 								<true/>
 							</dict>
@@ -670,6 +586,8 @@
 							<string>266pt</string>
 						</dict>
 						<dict>
+							<key>BecomeActive</key>
+							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
@@ -709,7 +627,7 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>1A1877281015D3A0002EC52F</string>
-				<string>1A3587CD101724C90037C5BE</string>
+				<string>1AC1FFE41019783B00802EBD</string>
 				<string>1CD0528F0623707200166675</string>
 				<string>XCMainBuildResultsModuleGUID</string>
 			</array>
@@ -751,8 +669,8 @@
 										<string>yes</string>
 										<key>sizes</key>
 										<array>
-											<string>{{0, 0}, {428, 254}}</string>
-											<string>{{428, 0}, {511, 254}}</string>
+											<string>{{0, 0}, {428, 255}}</string>
+											<string>{{428, 0}, {511, 255}}</string>
 										</array>
 									</dict>
 									<key>VerticalSplitView</key>
@@ -767,8 +685,8 @@
 										<string>yes</string>
 										<key>sizes</key>
 										<array>
-											<string>{{0, 0}, {939, 254}}</string>
-											<string>{{0, 254}, {939, 228}}</string>
+											<string>{{0, 0}, {939, 255}}</string>
+											<string>{{0, 255}, {939, 227}}</string>
 										</array>
 									</dict>
 								</dict>
@@ -801,7 +719,7 @@
 										<real>191</real>
 									</array>
 									<key>Frame</key>
-									<string>{{428, 0}, {511, 254}}</string>
+									<string>{{428, 0}, {511, 255}}</string>
 									<key>RubberWindowFrame</key>
 									<string>333 170 939 523 0 0 1440 878 </string>
 								</dict>
@@ -829,13 +747,13 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>1CD10A99069EF8BA00B06720</string>
-				<string>1A3587CE101724C90037C5BE</string>
+				<string>1AC1FFA61019715800802EBD</string>
 				<string>1C162984064C10D400B95A72</string>
-				<string>1A3587CF101724C90037C5BE</string>
-				<string>1A3587D0101724C90037C5BE</string>
-				<string>1A3587D1101724C90037C5BE</string>
-				<string>1A3587D2101724C90037C5BE</string>
-				<string>1A3587D3101724C90037C5BE</string>
+				<string>1AC1FFA71019715800802EBD</string>
+				<string>1AC1FFA81019715800802EBD</string>
+				<string>1AC1FFA91019715800802EBD</string>
+				<string>1AC1FFAA1019715800802EBD</string>
+				<string>1AC1FFAB1019715800802EBD</string>
 			</array>
 			<key>ToolbarConfiguration</key>
 			<string>xcode.toolbar.config.debugV3</string>
@@ -974,18 +892,18 @@
 							<key>GeometryConfiguration</key>
 							<dict>
 								<key>Frame</key>
-								<string>{{0, 0}, {923, 277}}</string>
+								<string>{{0, 0}, {1201, 394}}</string>
 								<key>RubberWindowFrame</key>
-								<string>71 369 923 318 0 0 1440 878 </string>
+								<string>71 252 1201 435 0 0 1440 878 </string>
 							</dict>
 							<key>Module</key>
 							<string>PBXDebugCLIModule</string>
 							<key>Proportion</key>
-							<string>277pt</string>
+							<string>394pt</string>
 						</dict>
 					</array>
 					<key>Proportion</key>
-					<string>277pt</string>
+					<string>394pt</string>
 				</dict>
 			</array>
 			<key>Name</key>
@@ -999,17 +917,17 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>1C78EAAD065D492600B07095</string>
-				<string>1A3587D4101724C90037C5BE</string>
+				<string>1AC1FFBB1019756C00802EBD</string>
 				<string>1C78EAAC065D492600B07095</string>
 			</array>
 			<key>ToolbarConfiguration</key>
 			<string>xcode.toolbar.config.consoleV3</string>
 			<key>WindowString</key>
-			<string>71 369 923 318 0 0 1440 878 </string>
+			<string>71 252 1201 435 0 0 1440 878 </string>
 			<key>WindowToolGUID</key>
 			<string>1C78EAAD065D492600B07095</string>
 			<key>WindowToolIsVisible</key>
-			<false/>
+			<true/>
 		</dict>
 		<dict>
 			<key>Identifier</key>

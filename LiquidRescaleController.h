@@ -69,6 +69,10 @@
  
   IBOutlet NSTableView* mTableImage;
   IBOutlet NSImageView *mPreviewImage;
+  IBOutlet NSComboBox *mResizeOrderCombo;
+  IBOutlet NSComboBox *mEnergyCombo;
+  
+  IBOutlet NSScrollView *mParametersView;
   
   @private
     BOOL cancelscaling;
@@ -117,6 +121,11 @@
 
 - (IBAction) openPresets: (id)sender;
 - (IBAction) savePresets: (id)sender;
+
+- (IBAction) openMask: (id)sender;
+- (IBAction) saveMask: (id)sender;
+- (IBAction) saveDocument: (id)sender;
+- (IBAction) saveDocumentAs: (id)sender;
 
 - (void)setupImageSize;
 @end
