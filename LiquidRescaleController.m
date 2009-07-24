@@ -5,8 +5,9 @@
 #import "NSImage+GTImageConversion.h"
 #else
 #import "NSImage-ProportionalScaling.h"
-#import "NSImage+Cropped.h"
 #endif
+
+#import "NSImage+Cropped.h"
 #import "MLog.h"
 #import "LiquidRescaleController.h"
 #import "NSFileManager-Extensions.h"
@@ -1177,7 +1178,7 @@ LqrRetVal my_progress_end(const gchar *message)
 
 		// TODO: is it needed ?
 		// Ask Lqr library to preserve our picture
-		lqr_carver_set_preserve_input_image(d->carver);
+		lqr_carver_set_preserve_input_image(carver);
 		}
 	}
 }

@@ -356,6 +356,7 @@
 					"osxlibs/include/lqr-1",
 				);
 				LIBRARY_SEARCH_PATHS = osxlibs/lib;
+				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
 				SDKROOT = macosx10.5;
 			};
