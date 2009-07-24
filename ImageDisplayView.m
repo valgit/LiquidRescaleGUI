@@ -12,25 +12,44 @@
    if (self) {
 	// Initialization code here.
 	 _bgColor = [[NSColor blackColor] retain];
+	_displayAfter = NO;
    }
    return self;
 }
 
 - (void)dealloc;
 {
-	[_image release];
+	[_beforeImage release];
+	[_afterImage release];
 	[_bgColor release];
 	[super dealloc];
 }
 
-- (void) setImage:(NSImage*)image
+- (void) setBeforeImage:(NSImage*)image
 {
     NSImage *temp = [image retain];
 
-    [_image release];
-    _image = temp;
-    [_image setScalesWhenResized:YES];
+    [_beforeImage release];
+    _beforeImage = temp;
+    [_beforeImage setScalesWhenResized:YES];
     [self setNeedsDisplay:YES];
+}
+
+- (void) setAfterImage:(NSImage*)image
+{
+    NSImage *temp = [image retain];
+
+    [_afterImage release];
+    _afterImage = temp;
+    [_afterImage setScalesWhenResized:YES];
+    [self setNeedsDisplay:YES];
+}
+
+- (void)setDisplayAfter:(BOOL)state;
+{
+	if (_displayAfter != state) {
+		_displayAfter = state;	
+	}
 }
 
 - (void)reloadImage;
@@ -47,9 +66,14 @@
     [self setNeedsDisplay:YES];
 }
 
-- (NSImage*)image
+- (NSImage*)beforeImage
 {
-    return _image;
+    return _beforeImage;
+}
+
+- (NSImage*)afterImage
+{
+    return _afterImage;
 }
 
 - (NSColor*)backgroundColor
@@ -76,6 +100,12 @@
 #endif
 
     // draw the image !
+    NSImage* _image;
+    if (_displayAfter)	{
+	_image = [self afterImage];
+    } else
+	_image = [self beforeImage];
+	
     if (_image) {
 	NSSize thumbsize = [_image size];
     NSLog(@"%s thumb (%f,%f)",__PRETTY_FUNCTION__,thumbsize.width,thumbsize.height);

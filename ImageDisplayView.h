@@ -6,17 +6,25 @@
 
 @interface ImageDisplayView : NSView
 {
-	NSImage* _image;
+	NSImage* _beforeImage;
+	NSImage* _afterImage;
+
 	NSColor *_bgColor;
+
+	BOOL _displayAfter;
 }
 
 - (id)initWithFrame:(NSRect)frame;
 
--(void)setImage:(NSImage*)image;
+-(void)setBeforeImage:(NSImage*)image;
+- (NSImage*)beforeImage;
+-(void)setAfterImage:(NSImage*)image;
+- (NSImage*)afterImage;
 - (void)reloadImage;
 
+- (void)setDisplayAfter:(BOOL)state;
+
 - (void)setBackgroundColor:(NSColor*)color;
-- (NSImage*)image;
 - (NSColor*)backgroundColor;
 
 @end

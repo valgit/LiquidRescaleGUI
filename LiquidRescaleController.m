@@ -159,7 +159,10 @@ LqrRetVal my_progress_end(const gchar *message)
 	[mTableImage registerForDraggedTypes:[NSArray arrayWithObjects:NSFilenamesPboardType,NSStringPboardType,NSURLPboardType,nil]];
 	// theIconColumn = [table tableColumnWithIdentifier:@"icon"];
 	// [ic setImageScaling:NSScaleProportionally]; // or NSScaleToFit
-	
+
+	// set the scroll to top !
+	NSPoint pt = NSMakePoint(0.0, [[mParametersView documentView] bounds].size.height);
+	[[mParametersView documentView] scrollPoint:pt];
 	//NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 	[self reset:mResetButton];
 	[self getDefaults];
@@ -540,9 +543,11 @@ LqrRetVal my_progress_end(const gchar *message)
         NSImage *image = [[NSImage alloc] initWithSize:[destImageRep size]];
         [image addRepresentation:destImageRep];
 
-        [_image release];
-        _image = image;
-        [_panelImageView reloadImage];
+        [_rescaleImage release];
+        _rescaleImage = image;
+        //[_panelImageView reloadImage];
+        [_imageView setAfterImage:_rescaleImage];
+        [_imageView setDisplayAfter:YES];
 
         //TODO: should be done on release ?
         /**** (IV) delete structures ? ****/
@@ -1160,8 +1165,15 @@ LqrRetVal my_progress_end(const gchar *message)
 
 
 // TODO: create real code here !
-- (IBAction)saveDocumentAs:(id)sender
+- (void)saveAsPanelDidEnd:(NSSavePanel *)savePanel
+                  returnCode:(int)returnCode
+                 contextInfo:(void *)contextInfo;
 {
+#pragma unused(contextInfo)
+        if(returnCode == NSOKButton) {
+                NSString *path = [savePanel filename];
+                [savePanel close];
+		MLogString(1 ,@"selected file : %@",path);
 #if 0
 	if([extension isEqualTo:@"jpg"]||[extension isEqualTo:@"jpeg"])
 		imageData = [imageRep representationUsingType:NSJPEGFileType properties:nil];
@@ -1180,11 +1192,40 @@ LqrRetVal my_progress_end(const gchar *message)
 	//[props setObject:exifDict forKey:NSImageEXIFData];
 	//NSData *photoData = [destImageRep representationUsingType:NSJPEGFileType properties:props];
 	// NSImageColorSyncProfileData
-	NSData *photoData = [destImageRep representationUsingType:NSTIFFFileType properties:NULL];
-	[photoData writeToFile:@"test.tif" atomically:YES];
 #endif	
+		NSBitmapImageRep *rep = [NSBitmapImageRep imageRepWithData:[_rescaleImage TIFFRepresentation]];
+		NSData *photoData = [rep representationUsingType:NSTIFFFileType properties:NULL];
+		BOOL status = [photoData writeToFile:path atomically:YES];
+		if(status)
+                       NSRunInformationalAlertPanel(@"Write Complete.",
+                                        @"save to %@ done",LS_OK,nil,nil,path);
+                else
+                        NSRunInformationalAlertPanel(@"Write Failed.",
+                                        @"save to %@ failed",LS_OK,nil,nil,path);
+	}
 }
 
+- (IBAction)saveDocumentAs:(id)sender
+{
+#pragma unused(sender)
+	MLogString(1 ,@"");
+        NSSavePanel *panel = [NSSavePanel savePanel];
+        [panel setCanCreateDirectories:NO];
+        //[panel setRequiredFileType:@"tiff"];
+        [panel setCanSelectHiddenExtension:YES]; // is it needed ?
+        [panel beginSheetForDirectory:nil
+				 file:@"unnamed.tif"
+		   modalForWindow:window
+			modalDelegate:self
+		   didEndSelector:@selector(saveAsPanelDidEnd:returnCode:contextInfo:)
+			  contextInfo:NULL];
+}
+
+// TODO: better ?
+- (IBAction) saveDocument: (id) sender
+{
+	[self saveDocumentAs:sender];
+}
 
 -(NSString*)outputfile;
 {
@@ -1289,7 +1330,7 @@ LqrRetVal my_progress_end(const gchar *message)
                 viewsize.width*percent,viewsize.height*percent);
         NSImage* imgcrop = [_image imageFromRect:selrect];
         //[_imageView setImageScaling:NSScaleProportionally];
-        [_imageView setImage: imgcrop];
+        [_imageView setBeforeImage: imgcrop];
         //[imgcrop release];
 }
 
