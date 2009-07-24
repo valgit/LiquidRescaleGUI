@@ -1209,22 +1209,34 @@ LqrRetVal my_progress_end(const gchar *message)
 {
 #pragma unused(sender)
 	MLogString(1 ,@"");
-        NSSavePanel *panel = [NSSavePanel savePanel];
-        [panel setCanCreateDirectories:NO];
-        //[panel setRequiredFileType:@"tiff"];
-        [panel setCanSelectHiddenExtension:YES]; // is it needed ?
-        [panel beginSheetForDirectory:nil
+	if (_rescaleImage != NULL) {
+		NSSavePanel *panel = [NSSavePanel savePanel];
+		[panel setCanCreateDirectories:NO];
+		//[panel setRequiredFileType:@"tiff"];
+		[panel setCanSelectHiddenExtension:YES]; // is it needed ?
+		[panel beginSheetForDirectory:nil
 				 file:@"unnamed.tif"
-		   modalForWindow:window
-			modalDelegate:self
-		   didEndSelector:@selector(saveAsPanelDidEnd:returnCode:contextInfo:)
-			  contextInfo:NULL];
+			   modalForWindow:window
+				modalDelegate:self
+			   didEndSelector:@selector(saveAsPanelDidEnd:returnCode:contextInfo:)
+				  contextInfo:NULL];
+	} else {
+              NSRunCriticalAlertPanel ([[NSProcessInfo processInfo] processName],
+			NSLocalizedString(@"Rescale Not Done",@""), 
+			LS_OK, NULL, NULL);
+	}
 }
 
 // TODO: better ?
 - (IBAction) saveDocument: (id) sender
 {
-	[self saveDocumentAs:sender];
+	if (_rescaleImage != NULL) {
+		[self saveDocumentAs:sender];
+	} else {
+              NSRunCriticalAlertPanel ([[NSProcessInfo processInfo] processName],
+			NSLocalizedString(@"Rescale Not Done",@""), 
+			LS_OK, NULL, NULL);
+	}
 }
 
 -(NSString*)outputfile;
