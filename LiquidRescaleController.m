@@ -70,6 +70,8 @@ void libintl_dgettext()
 - (void) progress_update:(NSNumber*)percent;
 - (void) progress_end:(NSString*)message;
 
+- (void) buildSkinToneBias;
+
 @end
 
 // TODO: place in their own files
@@ -91,6 +93,23 @@ sobel(gint x, gint y, gint w, gint h, LqrReadingWindow *rw, gpointer extra_data)
     }
     return (gfloat) (sqrt(ex * ex + ey * ey));
 }
+
+#if 0
+- (BOOL) isSkinToneColor:(NSColor color);
+{
+    // NOTE: color is previously converted to eight bits.
+    double R = qRed(color)   / 255.0;
+    double G = qGreen(color) / 255.0;
+    double B = qBlue(color)  / 255.0;
+    double S = R + G + B;
+
+    return( (B/G         < 1.249) &&
+            (S/3.0*R     > 0.696) &&
+            (1.0/3.0-B/S > 0.014) &&
+            (G/(3.0*S)   < 0.108)
+          );
+}
+#endif
 
 // TODO: better GUI here !
 LqrRetVal my_progress_init(const gchar *message)
@@ -1604,16 +1623,15 @@ LqrRetVal my_progress_end(const gchar *message)
 		== expirationDate )
     {
         int result = NSRunAlertPanel(@"Beta Expired", 
-									 @"This beta has expired, please visit "
-									 "http://vald70.free.fr/ to grab"
-									 "the latest version.", 
-									 @"Take Me There", @"Exit", nil);
+				 @"This beta has expired, please visit "
+				 "http://vald70.free.fr/ to grab"
+				 "the latest version.", 
+				 @"Take Me There", @"Exit", nil);
 		
-        if( result == NSAlertDefaultReturn )
-        {
+        if( result == NSAlertDefaultReturn ) {
             [[NSWorkspace sharedWorkspace] openURL:
 				[NSURL URLWithString:
-							  @"http://vald70.free.fr/"]];
+				  @"http://vald70.free.fr/"]];
         }
         [[NSApplication sharedApplication] terminate:self];
     }
@@ -1672,4 +1690,17 @@ LqrRetVal my_progress_end(const gchar *message)
 
 }
 
+- (void) buildSkinToneBias;
+{
+#if 0
+    NSColor* c;
+    for(int x=0; x < _img.width(); ++x) {
+        for(int y=0; y < _img.height(); ++y) {
+            c = _img.pixel(x, y);
+            gdouble bias = 10000*isSkinTone(c);
+            lqr_carver_bias_add_xy(carver,bias,x,y);
+        }
+    }
+#endif
+}
 @end
