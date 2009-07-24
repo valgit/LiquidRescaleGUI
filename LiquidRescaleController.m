@@ -1174,6 +1174,10 @@ LqrRetVal my_progress_end(const gchar *message)
 		/* (I.1) swallow the buffer in a (minimal) LqrCarver object
 		  *       (arguments are width, height and number of colour channels) */
 		carver = lqr_carver_new(img_bits, w, h, 3);
+
+		// TODO: is it needed ?
+		// Ask Lqr library to preserve our picture
+		lqr_carver_set_preserve_input_image(d->carver);
 		}
 	}
 }
