@@ -90,6 +90,10 @@
     NSImage* _rescaleImage;
     LqrCarver *carver;
     LqrProgress *progress;
+
+    BOOL _hResize;
+    BOOL _wResize;
+    BOOL _stage;
 }
 
 - (IBAction) cancel: (id)sender;

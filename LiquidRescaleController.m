@@ -95,13 +95,14 @@ sobel(gint x, gint y, gint w, gint h, LqrReadingWindow *rw, gpointer extra_data)
     return (gfloat) (sqrt(ex * ex + ey * ey));
 }
 
-#if 0
-- (BOOL) isSkinToneColor:(NSColor color);
+// determine if a color is skin tone or not !
+// return bias value 
+BOOL isSkinTone(int r,int g,int b)
 {
     // NOTE: color is previously converted to eight bits.
-    double R = qRed(color)   / 255.0;
-    double G = qGreen(color) / 255.0;
-    double B = qBlue(color)  / 255.0;
+    double R = r   / 255.0;
+    double G = g / 255.0;
+    double B = b  / 255.0;
     double S = R + G + B;
 
     return( (B/G         < 1.249) &&
@@ -110,7 +111,6 @@ sobel(gint x, gint y, gint w, gint h, LqrReadingWindow *rw, gpointer extra_data)
             (G/(3.0*S)   < 0.108)
           );
 }
-#endif
 
 // TODO: better GUI here !
 LqrRetVal my_progress_init(const gchar *message)
@@ -130,7 +130,7 @@ LqrRetVal my_progress_update(gdouble percentage)
 {
   //fprintf(stderr,"lqr: %.2f %%\n",100*percentage);
   LiquidRescaleController* controller = [ NSApp delegate]; 
-  NSNumber* percent = [NSNumber numberWithDouble:(100*percentage)];
+  NSNumber* percent = [NSNumber numberWithDouble:(percentage)];
   [controller performSelectorOnMainThread:@selector(progress_update:) withObject:percent waitUntilDone:NO];
   //NSLog(@"%s thread is : %@",__PRETTY_FUNCTION__,[NSThread currentThread]);
   //[controller progress_update:percent];
@@ -514,7 +514,10 @@ LqrRetVal my_progress_end(const gchar *message)
 	[self performSelectorOnMainThread:@selector(startRescaling) withObject:nil waitUntilDone:NO];
 	
 	/**** (II) LIQUID RESCALE ****/
-	lqr_carver_resize(carver, width, height);
+	if (lqr_carver_resize(carver, width, height) == LQR_NOMEM) {
+		// TODO : add warning
+		NSLog(@"not enough memory !");
+	}
 	
 	/**** (III) get the new data ****/
 	int w = lqr_carver_get_width(carver);
@@ -596,6 +599,10 @@ LqrRetVal my_progress_end(const gchar *message)
 {
 	MLogString(1 ,@"");	
 	if (_image != NULL) {
+	  NSSize imSize = [_image size];
+	  int w = imSize.width;
+	  int h = imSize.height;
+
 	 // TODO: from interface !
 	  int max_step = [mStepsSlider intValue];
 	  double rigidity =  [mRigiditySlider doubleValue];
@@ -606,22 +613,13 @@ LqrRetVal my_progress_end(const gchar *message)
 
 	  int width = [mWidthSlider intValue];
 	  int height = [mHeightSlider intValue];
-	  if([mMaintainAspectButton state]==NSOnState) {
-		MLogString(1 ,@"maitingin ratio");
-	  }
+
+	  _stage = NO;
+	  _hResize = (h == height) ? NO : YES;
+	  _wResize = (w == width) ? NO : YES;
 
 	  MLogString(1 ,@"resizing to (%d,%d) ",width,height);
-	  if([mAddWeightMaskButton state]==NSOnState) {
-		MLogString(1 ,@"creating mask");
-	  }
-	  if([mPreserveSkinTonesButton state]==NSOnState) {
-		MLogString(1 ,@"preserving skin tones");
-	  }
-
 	  if ([mPercentSlider doubleValue] <100.0) { // mixed rescale 
-		NSSize imSize = [_image size];
-		int w = imSize.width;
-		int h = imSize.height;
 		double stdRescaleP = (100.0 - [mPercentSlider doubleValue]) / 100.0;
 		int diff_w         = (int)(stdRescaleP * (w - width));
 		int diff_h         = (int)(stdRescaleP * (h - height));
@@ -629,6 +627,7 @@ LqrRetVal my_progress_end(const gchar *message)
 		//imTemp.resize(imTemp.width() - diff_w, imTemp.height() - diff_h);
 		MLogString(1 ,@"mix resize with (%d,%d) -> (%d,%d) ",diff_w,diff_h,
 			w - diff_w, h - diff_h);
+		// TODO: call cifilter here !
 	  }
 
 	  /* (I.2) initialize the carver (with default values),
@@ -645,7 +644,23 @@ LqrRetVal my_progress_end(const gchar *message)
 	  /* (I.3b.6) set the enlargement step */
 	  lqr_carver_set_enl_step(carver, enl_step);
 
+	  // Choose the resize order
+	  if ([mResizeOrderCombo indexOfSelectedItem] == 0)
+            lqr_carver_set_resize_order(carver, LQR_RES_ORDER_HOR);
+          else
+            lqr_carver_set_resize_order(carver, LQR_RES_ORDER_VERT);
+
+
 	  // TODO: bias and co here ...
+	  if([mAddWeightMaskButton state]==NSOnState) {
+		MLogString(1 ,@"creating mask");
+	  }
+
+	  if([mPreserveSkinTonesButton state]==NSOnState) {
+		MLogString(1 ,@"try preserving skin tones");
+		[self buildSkinToneBias];
+	  }
+
 
 	  /**** (II) LIQUID RESCALE ****/
 	  // And dispatch the operation to a background thread to avoid locking up the UI.
@@ -678,6 +693,8 @@ LqrRetVal my_progress_end(const gchar *message)
 	[mPercentSlider setFloatValue:100.0]; // (0 <= percent <= 100 ).  Default: 100.0
 	[self takePercent:mPercentSlider];
 
+	[mEnergyCombo selectItemAtIndex:0];
+	[mResizeOrderCombo selectItemAtIndex:0];
 	[self setupImageSize];
 }
 
@@ -758,7 +775,7 @@ LqrRetVal my_progress_end(const gchar *message)
 }
 
 
-#if 1
+#if 0
 //  test for detecting end of sliding ...
 //
 - (IBAction)takeHeight:(id)sender {
@@ -834,16 +851,24 @@ LqrRetVal my_progress_end(const gchar *message)
 - (IBAction) takeHeight: (id)sender;
 {
 	//NSLog(@"%s",__PRETTY_FUNCTION__);
-	float theValue = [sender floatValue];
+	int theValue = (int)[sender floatValue];
 	[mHeightTextField setFloatValue:theValue];
 	//[mStrengthStepper setFloatValue:theValue];
 	[mHeightSlider setFloatValue:theValue];
+	if([mMaintainAspectButton state]==NSOnState) {
+                //MLogString(1 ,@"maitingin ratio");
+		NSSize imSize = [_image size];
+		double pval = (theValue / (double)imSize.height);
+		int neww = (pval * imSize.width);
+		[mWidthTextField setFloatValue:neww];
+		[mWidthSlider setFloatValue:neww];
+        }
 }
 
 - (IBAction) takeSteps: (id)sender;
 {
 	//NSLog(@"%s",__PRETTY_FUNCTION__);
-	float theValue = [sender floatValue];
+	int theValue = (int)[sender floatValue];
 	[mStepsTextField setFloatValue:theValue];
 	//[mStrengthStepper setFloatValue:theValue];
 	[mStepsSlider setFloatValue:theValue];
@@ -871,10 +896,19 @@ LqrRetVal my_progress_end(const gchar *message)
 - (IBAction) takeWidth: (id)sender;
 {
 	//NSLog(@"%s",__PRETTY_FUNCTION__);
-	float theValue = [sender floatValue];
+	int theValue = (int)[sender floatValue];
 	[mWidthTextField setFloatValue:theValue];
 	//[mStrengthStepper setFloatValue:theValue];
 	[mWidthSlider setFloatValue:theValue];
+
+	if([mMaintainAspectButton state]==NSOnState) {
+                //MLogString(1 ,@"maitingin ratio");
+		NSSize imSize = [_image size];
+		double pval = (theValue / (double)imSize.width);
+		int newh = (pval * imSize.height);
+		[mHeightTextField setFloatValue:newh];
+		[mHeightSlider setFloatValue:newh]; 
+        }
 }
 
 - (void) openPresetsDidEnd:(NSOpenPanel *)panel
@@ -904,8 +938,6 @@ LqrRetVal my_progress_end(const gchar *message)
 		//NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithContentsOfFile:[panel filename]];
 		[mStepsSlider setFloatValue:[[plistDict objectForKey:@"steps"] floatValue]];
 		[mRigiditySlider setFloatValue:[[plistDict objectForKey:@"rigidity"] floatValue]];
-		[mHeightSlider setFloatValue:[[plistDict objectForKey:@"height"] floatValue]];
-		[mWidthSlider setFloatValue:[[plistDict objectForKey:@"width"] floatValue]];
 		[mPercentSlider setFloatValue:[[plistDict objectForKey:@"percent"] floatValue]];
 	}
 	//[plistDict release];
@@ -1194,7 +1226,7 @@ LqrRetVal my_progress_end(const gchar *message)
 		  //spp =[rep samplesPerPixel];
 		  w =[rep pixelsWide];
 		  h =[rep pixelsHigh];
-		  unsigned char  *pixels =[rep bitmapData];
+		  pixels =[rep bitmapData];
 #endif
 		// TODO: use a progress window ?
 		  unsigned char* img_bits = (unsigned char*)malloc(w*h*3);
@@ -1218,6 +1250,7 @@ LqrRetVal my_progress_end(const gchar *message)
 		// Ask Lqr library to preserve our picture
 		lqr_carver_set_preserve_input_image(carver);
 		#ifndef GNUSTEP
+		CFRelease(pixels);
 		CFRelease(source);
 		#endif
 		
@@ -1709,10 +1742,14 @@ LqrRetVal my_progress_end(const gchar *message)
 
 - (void) progress_init:(NSString*)message;
 {
-	MLogString(1 ,@"msg: %@", message);
+  MLogString(1 ,@"msg: %@", message);
   [mProgressIndicator setUsesThreadedAnimation:YES];
   //[mProgressIndicator setIndeterminate:YES];
-  [mProgressIndicator setDoubleValue:0.0];
+  if (!_stage)
+        [mProgressIndicator setDoubleValue:0.0];
+    else
+	[mProgressIndicator setDoubleValue:50.0];
+
   [mProgressIndicator setMaxValue:100.0]; 
   [mProgressIndicator startAnimation:self];
   [mProgressText setStringValue:message];
@@ -1720,9 +1757,21 @@ LqrRetVal my_progress_end(const gchar *message)
 
 - (void) progress_update:(NSNumber*)percent;
 {
-	MLogString(1 ,@"percent: %@", percent);
-  [mProgressIndicator setDoubleValue:[percent doubleValue]];
- // [mProgressText setStringValue:percent];
+	//MLogString(1 ,@"percent: %@", percent);
+	int m_progress;
+
+	if (!_stage) {
+		if (!_wResize || !_hResize)
+		    m_progress = (int)([percent doubleValue]*100.0);
+		else
+		    m_progress = (int)([percent doubleValue]*50.0);
+	} else {
+		m_progress = (int)(50.0 + [percent doubleValue]*50.0);
+        }
+
+  [mProgressIndicator setDoubleValue:m_progress];
+  //[mProgressText setStringValue:percent];
+  //MLogString(1 ,@"percent: %d", m_progress);
   //NSLog(@"%s thread is : %@",__PRETTY_FUNCTION__,[NSThread currentThread]);
 }
 
@@ -1730,23 +1779,57 @@ LqrRetVal my_progress_end(const gchar *message)
 - (void) progress_end:(NSString*)message;
 {
 	MLogString(1 ,@"msg: %@", message);
-  [mProgressIndicator setDoubleValue:0];
-  [mProgressIndicator stopAnimation:self];
-  [mProgressText setStringValue:message];
+	if (!_stage) {
+		if (!_wResize || !_hResize) {
+		    [mProgressIndicator setDoubleValue:0];
+		    [mProgressIndicator stopAnimation:self];
+		}
+        else
+            [mProgressIndicator setDoubleValue:50];
 
+        _stage = YES;
+    }
+    else
+    {
+        [mProgressIndicator setDoubleValue:0];
+	[mProgressIndicator stopAnimation:self];
+    }
+    [mProgressText setStringValue:message];
 }
 
 - (void) buildSkinToneBias;
 {
-#if 0
-    NSColor* c;
-    for(int x=0; x < _img.width(); ++x) {
-        for(int y=0; y < _img.height(); ++y) {
-            c = _img.pixel(x, y);
-            gdouble bias = 10000*isSkinTone(c);
-            lqr_carver_bias_add_xy(carver,bias,x,y);
-        }
-    }
+	MLogString(1 ,@"");
+	int             Bpr;
+	// int             spp;
+	int             w;
+	int             h;
+	const unsigned char  *pixels;
+#ifndef GNUSTEP
+	CGImageRef cgiref = CGImageSourceCreateImageAtIndex(source, 0, NULL);
+	w = CGImageGetWidth( cgiref );
+	h = CGImageGetHeight( cgiref );
+	Bpr = CGImageGetBytesPerRow(cgiref);
+
+	CFDataRef imageData = CGDataProviderCopyData( CGImageGetDataProvider( cgiref ));
+	pixels = (const unsigned char  *)CFDataGetBytePtr(imageData);
+#else
+	NSBitmapImageRep *rep = [NSBitmapImageRep imageRepWithData:[_image TIFFRepresentation]];
+	Bpr =[rep bytesPerRow];
+        //spp =[rep samplesPerPixel];
+        w =[rep pixelsWide];
+        h =[rep pixelsHigh];
+        pixels =[rep bitmapData];
 #endif
+	int x,y;
+
+        for (y=0; y<h; y++) {
+            unsigned char *p = (unsigned char *)(pixels + Bpr*y);
+            for (x=0; x<w; x++/*,p+=spp*/) {
+                  // maybe we should use the alpha plane here ...
+		  gdouble bias = 10000.0*isSkinTone(p[3*x],p[3*x+1],p[3*x+2]);
+		  lqr_carver_bias_add_xy(carver,bias,x,y);
+             }
+        }
 }
 @end
