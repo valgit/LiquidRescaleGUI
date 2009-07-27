@@ -1753,6 +1753,9 @@ LqrRetVal my_progress_end(const gchar *message)
   [mProgressIndicator setMaxValue:100.0]; 
   [mProgressIndicator startAnimation:self];
   [mProgressText setStringValue:message];
+#ifdef GNUSTEP
+	[mProgressIndicator displayIfNeeded];
+#endif
 }
 
 - (void) progress_update:(NSNumber*)percent;
@@ -1773,6 +1776,9 @@ LqrRetVal my_progress_end(const gchar *message)
   //[mProgressText setStringValue:percent];
   //MLogString(1 ,@"percent: %d", m_progress);
   //NSLog(@"%s thread is : %@",__PRETTY_FUNCTION__,[NSThread currentThread]);
+#ifdef GNUSTEP
+	[mProgressIndicator displayIfNeeded];
+#endif
 }
 
 
@@ -1795,6 +1801,9 @@ LqrRetVal my_progress_end(const gchar *message)
 	[mProgressIndicator stopAnimation:self];
     }
     [mProgressText setStringValue:message];
+#ifdef GNUSTEP
+	[mProgressIndicator displayIfNeeded];
+#endif
 }
 
 - (void) buildSkinToneBias;
