@@ -693,7 +693,7 @@ LqrRetVal my_progress_end(const gchar *message)
 	[mPercentSlider setFloatValue:100.0]; // (0 <= percent <= 100 ).  Default: 100.0
 	[self takePercent:mPercentSlider];
 
-	[mEnergyCombo selectItemAtIndex:0];
+	//TODO: [mEnergyCombo selectItemAtIndex:0];
 	[mResizeOrderCombo selectItemAtIndex:0];
 	[self setupImageSize];
 }
@@ -1250,7 +1250,7 @@ LqrRetVal my_progress_end(const gchar *message)
 		// Ask Lqr library to preserve our picture
 		lqr_carver_set_preserve_input_image(carver);
 		#ifndef GNUSTEP
-		CFRelease(pixels);
+		// TODO: check CFRelease(pixels);
 		CFRelease(source);
 		#endif
 		
@@ -1856,7 +1856,8 @@ LqrRetVal my_progress_end(const gchar *message)
 	int             w;
 	int             h;
 	const unsigned char  *pixels;
-#ifndef GNUSTEP
+//#ifndef GNUSTEP
+#if 0
 	CGImageRef cgiref = CGImageSourceCreateImageAtIndex(source, 0, NULL);
 	w = CGImageGetWidth( cgiref );
 	h = CGImageGetHeight( cgiref );

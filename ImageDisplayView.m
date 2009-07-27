@@ -180,7 +180,22 @@
 - (void)mouseDown:(NSEvent*)event
 {
 	NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
-        NSLog(@"%s -> (%f,%f)",__PRETTY_FUNCTION__,loc.x,loc.y);
+	double pressure = [event pressure];
+	  if(([event type] == NSTabletPoint)
+	|| ([event subtype] == NSTabletPointEventSubtype)) {
+		int mask = [event buttonMask];
+		NSLog(@"%s -> tablette %x",__PRETTY_FUNCTION__,mask);
+		
+		if (mask && NSPenTipMask)
+			NSLog(@"%s -> pentip",__PRETTY_FUNCTION__);
+		if (mask && NSPenLowerSideMask)
+			NSLog(@"%s -> NSPenLowerSide",__PRETTY_FUNCTION__);
+			if (mask && NSPenUpperSideMask)
+			NSLog(@"%s -> NSPenUpperSide",__PRETTY_FUNCTION__);
+			
+	}
+
+        NSLog(@"%s -> (%f,%f) pres: %f",__PRETTY_FUNCTION__,loc.x,loc.y,pressure);
 }
 
 - (void)mouseMoved: (NSEvent*)event
@@ -196,7 +211,7 @@
 
 - (void)mouseDragged:(NSEvent*)event
 {
-        NSLog(@"%s",__PRETTY_FUNCTION__);
+    //    NSLog(@"%s",__PRETTY_FUNCTION__);
 #if 0
     var newPoint = [event locationInWindow];
     newPoint.x -= mouseDownPoint.x;
@@ -204,6 +219,7 @@
     [self setFrameOrigin:newPoint];
 #endif
 	NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
+	double pressure = [event pressure];
 }
 
 @end
