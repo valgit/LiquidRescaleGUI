@@ -197,10 +197,6 @@ LqrRetVal my_progress_end(const gchar *message)
 	_image = NULL;
 	//[mPreviewImage setImage:_image];
 	[self setZoomFactor:100.0];
-	// TODO: missing links !!
-	//[_panelImageView setDataSource:self];
-	//[_panelImageView setDelegate:self];
-	//[[NSApplication sharedApplication] setDelegate:self];
 }
 
 - (id)init
@@ -499,84 +495,101 @@ LqrRetVal my_progress_end(const gchar *message)
   //[panel close];
 }
 
-// worker thread...
+#pragma mark -
+#pragma mark worker thread...
+
 - (void) lqrRescaling:(NSDictionary*)infos;
 {
- // Since we are being spun off into a thread, we need our own auto-release pool
-  NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-  MLogString(1 ,@"");	
-  //NSLog(@"%s thread is : %@",__PRETTY_FUNCTION__,[NSThread currentThread]);
-
-  // TODO: get it from outside !
-  NSNumber* Width = (NSNumber *)[infos objectForKey:@"width"];
-  int width = [Width intValue];
-  NSNumber* Height = (NSNumber *)[infos objectForKey:@"height"];
-  int height = [Height intValue];
-
-  // Signal that we are ready to start so that our progress sheet is displayed
-  [self performSelectorOnMainThread:@selector(startRescaling) withObject:nil waitUntilDone:NO];
-
-  /**** (II) LIQUID RESCALE ****/
-  lqr_carver_resize(carver, width, height);
-
-       /**** (III) get the new data ****/
-          int w = lqr_carver_get_width(carver);
-          int h = lqr_carver_get_height(carver);
-          MLogString(1 ,@"resizing data (%d,%d,%d) ",w,h,lqr_carver_get_channels(carver));
-          // TODO: is it needed ?
-          if (lqr_carver_get_channels(carver) != 3) {
-                NSLog(@"bad channel number !");
-                return;
-          }
-
-          // create a new representation without the alpha plane ...
-         NSBitmapImageRep *destImageRep = [[[NSBitmapImageRep alloc]                                            
-                    initWithBitmapDataPlanes:NULL                                                               
-                                          pixelsWide:w                                                          
-                                          pixelsHigh:h                                                          
-                                          bitsPerSample:8 // [rep bitsPerSample]                                
-                                          samplesPerPixel:3                                                     
-                                        hasAlpha:NO                                                             
-                                        isPlanar:NO                                                             
-                                          colorSpaceName:NSCalibratedRGBColorSpace                              
-                                         bytesPerRow:0 // (spp*width)                                           
-                                        bitsPerPixel:24 ] autorelease];          
-
-        int destBpr = [destImageRep bytesPerRow];
-        int destspp = [destImageRep samplesPerPixel];
-        unsigned char* destpix = [destImageRep bitmapData];
-        NSLog(@"%s exporting photo Bpr = %d,  Spp = %d (alpha: %d)",__PRETTY_FUNCTION__,
-                        destBpr,destspp, [destImageRep hasAlpha] );
-
-        unsigned char *rgb;
-        int x,y;
-        lqr_carver_scan_reset(carver);
-        while (lqr_carver_scan(carver, &x, &y, &rgb)) {
-                unsigned char *q = (unsigned char *)(destpix + destBpr*y);
-                        q[destspp*x] = rgb[0]; // red
-                        q[destspp*x+1] = rgb[1]; // green
-                        q[destspp*x+2] = rgb[2];
-        }
-       //NSData *photoData = [destImageRep representationUsingType:NSTIFFFileType properties:NULL];
-     //   [photoData writeToFile:@"test.tif" atomically:YES];
-
-        NSImage *image = [[NSImage alloc] initWithSize:[destImageRep size]];
-        [image addRepresentation:destImageRep];
-
-        [_rescaleImage release];
-        _rescaleImage = image;
-        //[_panelImageView reloadImage];
-        [_imageView setAfterImage:_rescaleImage];
-        [_imageView setDisplayAfter:YES];
-
-        //TODO: should be done on release ?
-        /**** (IV) delete structures ? ****/
-
-   // Finally, signal that we are done so that the UI becomes active again.
-   [self performSelectorOnMainThread:@selector(endRescaling) withObject:nil waitUntilDone:NO];
-
- // Clean out our auto release pool.
-  [pool release];
+	// Since we are being spun off into a thread, we need our own auto-release pool
+	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+	MLogString(1 ,@"");	
+	//NSLog(@"%s thread is : %@",__PRETTY_FUNCTION__,[NSThread currentThread]);
+	
+	NSNumber* Width = (NSNumber *)[infos objectForKey:@"width"];
+	int width = [Width intValue];
+	NSNumber* Height = (NSNumber *)[infos objectForKey:@"height"];
+	int height = [Height intValue];
+	
+	// Signal that we are ready to start so that our progress sheet is displayed
+	[self performSelectorOnMainThread:@selector(startRescaling) withObject:nil waitUntilDone:NO];
+	
+	/**** (II) LIQUID RESCALE ****/
+	lqr_carver_resize(carver, width, height);
+	
+	/**** (III) get the new data ****/
+	int w = lqr_carver_get_width(carver);
+	int h = lqr_carver_get_height(carver);
+	MLogString(1 ,@"resizing data (%d,%d,%d) ",w,h,lqr_carver_get_channels(carver));
+	// TODO: is it needed ?
+	if (lqr_carver_get_channels(carver) != 3) {
+		NSLog(@"bad channel number !");
+		return;
+	}
+	
+	
+	// create a new representation without the alpha plane ...
+	NSBitmapImageRep *destImageRep = [[[NSBitmapImageRep alloc]                                            
+									   initWithBitmapDataPlanes:NULL                                                               
+									   pixelsWide:w                                                          
+									   pixelsHigh:h                                                          
+									   bitsPerSample:8 // [rep bitsPerSample]                                
+									   samplesPerPixel:3                                                     
+									   hasAlpha:NO                                                             
+									   isPlanar:NO                                                             
+									   colorSpaceName:NSCalibratedRGBColorSpace                              
+									   bytesPerRow:0 // (spp*width)                                           
+									   bitsPerPixel:24 ] autorelease];          
+	
+	int destBpr = [destImageRep bytesPerRow];
+	int destspp = [destImageRep samplesPerPixel];
+	unsigned char* destpix = [destImageRep bitmapData];
+	NSLog(@"%s exporting photo Bpr = %d,  Spp = %d (alpha: %d)",__PRETTY_FUNCTION__,
+		  destBpr,destspp, [destImageRep hasAlpha] );
+	
+	unsigned char *rgb;
+	int x,y;
+	lqr_carver_scan_reset(carver);
+	while (lqr_carver_scan(carver, &x, &y, &rgb)) {
+		unsigned char *q = (unsigned char *)(destpix + destBpr*y);
+		q[destspp*x] = rgb[0]; // red
+		q[destspp*x+1] = rgb[1]; // green
+		q[destspp*x+2] = rgb[2];
+	}
+	//NSData *photoData = [destImageRep representationUsingType:NSTIFFFileType properties:NULL];
+	//   [photoData writeToFile:@"test.tif" atomically:YES];
+	
+#ifdef _TODO_
+	// TODO: compilation !
+	// make data provider from buffer
+	CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, destpix, (width * height * destspp), NULL);
+	
+	if (provider != NULL) {
+		CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
+		CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault
+		CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
+		CGImageRef imageRef = CGImageCreate(width, height, bitsPerComponent, bitsPerPixel, 
+											bytesPerRow, colorSpaceRef, bitmapInfo,
+											provider, NULL, NO, renderingIntent);
+	}
+#endif
+	
+	NSImage *image = [[NSImage alloc] initWithSize:[destImageRep size]];
+	[image addRepresentation:destImageRep];
+	
+	[_rescaleImage release];
+	_rescaleImage = image;
+	//[_panelImageView reloadImage];
+	[_imageView setAfterImage:_rescaleImage];
+	[_imageView setDisplayAfter:YES];
+	
+	//TODO: should be done on release ?
+	/**** (IV) delete structures ? ****/
+	
+	// Finally, signal that we are done so that the UI becomes active again.
+	[self performSelectorOnMainThread:@selector(endRescaling) withObject:nil waitUntilDone:NO];
+	
+	// Clean out our auto release pool.
+	[pool release];
 }
 
 - (IBAction)LiquidRescale:(id)sender
@@ -682,6 +695,20 @@ LqrRetVal my_progress_end(const gchar *message)
         [infoPanel center];
     }
     [infoPanel makeKeyAndOrderFront:nil];
+	#else
+	NSDictionary *options;
+    NSImage *img;
+
+    img = [NSImage imageNamed: @"image broken"];
+    options = [NSDictionary dictionaryWithObjectsAndKeys:
+          @"0.1", @"Version",
+          @"Liquid Rescale", @"ApplicationName",
+          img, @"ApplicationIcon",
+          @"Copyright 2009, Valery Brasseur", @"Copyright",
+          @"Liquid Rescale v0.1 prealpha", @"ApplicationVersion",
+          nil];
+
+    [[NSApplication sharedApplication] orderFrontStandardAboutPanelWithOptions:options];
 #endif
 }
 
@@ -1147,20 +1174,31 @@ LqrRetVal my_progress_end(const gchar *message)
 
 		// TODO: better interface ?
 		  // TODO: this part should be done on load ...
+		
+		  int             Bpr;
+		 // int             spp;
+		  int             w;
+		  int             h;
+		  const unsigned char  *pixels;
 #ifndef GNUSTEP
-		  NSBitmapImageRep *rep = [NSBitmapImageRep imageRepWithData:[_image TIFFRepresentation]];
-		  if ([rep bitsPerSample] != 8) {
-			NSLog(@"unsupported bpp");
-		  }
-#endif
-		  int x,y;
-		  int             Bpr =[rep bytesPerRow];
-		  int             spp =[rep samplesPerPixel];
-		  int             w =[rep pixelsWide];
-		  int             h =[rep pixelsHigh];
+			CGImageRef cgiref = CGImageSourceCreateImageAtIndex(source, 0, NULL);
+			w = CGImageGetWidth( cgiref );
+			h = CGImageGetHeight( cgiref );
+			Bpr = CGImageGetBytesPerRow(cgiref);
+			
+			CFDataRef imageData = CGDataProviderCopyData( CGImageGetDataProvider( cgiref ));
+			pixels = (const unsigned char  *)CFDataGetBytePtr(imageData);
+#else
+			
+		  Bpr =[rep bytesPerRow];
+		  //spp =[rep samplesPerPixel];
+		  w =[rep pixelsWide];
+		  h =[rep pixelsHigh];
 		  unsigned char  *pixels =[rep bitmapData];
-
+#endif
+		// TODO: use a progress window ?
 		  unsigned char* img_bits = (unsigned char*)malloc(w*h*3);
+		    int x,y;
 		  for (y=0; y<h; y++) {
 		       unsigned char *p = (unsigned char *)(pixels + Bpr*y);
 		       unsigned char* _imptr = img_bits + y * w * 3;
@@ -1179,6 +1217,10 @@ LqrRetVal my_progress_end(const gchar *message)
 		// TODO: is it needed ?
 		// Ask Lqr library to preserve our picture
 		lqr_carver_set_preserve_input_image(carver);
+		#ifndef GNUSTEP
+		CFRelease(source);
+		#endif
+		
 		}
 	}
 }
@@ -1187,8 +1229,6 @@ LqrRetVal my_progress_end(const gchar *message)
 #pragma mark -
 #pragma mark TODO
 
-
-// TODO: create real code here !
 - (void)saveAsPanelDidEnd:(NSSavePanel *)savePanel
                   returnCode:(int)returnCode
                  contextInfo:(void *)contextInfo;
@@ -1237,6 +1277,7 @@ LqrRetVal my_progress_end(const gchar *message)
 		NSSavePanel *panel = [NSSavePanel savePanel];
 		[panel setCanCreateDirectories:NO];
 		//[panel setRequiredFileType:@"tiff"];
+		//TODO: [panel setAllowedFileTypes:[NSArray arrayWithObjects:@"tiff","jpeg",nil]];
 		[panel setCanSelectHiddenExtension:YES]; // is it needed ?
 		[panel beginSheetForDirectory:nil
 				 file:@"unnamed.tif"
