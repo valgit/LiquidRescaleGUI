@@ -88,6 +88,9 @@
     double _zoomfactor;
     NSImage* _image;
     NSImage* _rescaleImage;
+
+    NSImage* _imageMask;
+
     LqrCarver *carver;
     LqrProgress *progress;
 

@@ -179,7 +179,8 @@
 
 - (void)mouseDown:(NSEvent*)event
 {
-        NSLog(@"%s",__PRETTY_FUNCTION__);
+	NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
+        NSLog(@"%s -> (%f,%f)",__PRETTY_FUNCTION__,loc.x,loc.y);
 }
 
 - (void)mouseMoved: (NSEvent*)event

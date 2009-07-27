@@ -1337,6 +1337,48 @@ LqrRetVal my_progress_end(const gchar *message)
 	}
 }
 
+- (void)openMaskPanelDidEnd:(NSOpenPanel *)openPanel
+                  returnCode:(int)returnCode
+                 contextInfo:(void *)contextInfo;
+{
+#pragma unused(contextInfo)
+        if(returnCode == NSOKButton) {
+                NSString *path = [openPanel filename];
+                [openPanel close];
+		MLogString(1 ,@"selected file : %@",path);
+
+                _imageMask =[[NSImage alloc] initWithContentsOfFile:path];
+
+		// DEBUG...
+		NSBitmapImageRep *rep = [NSBitmapImageRep imageRepWithData:[_imageMask TIFFRepresentation]];
+		int Bpr =[rep bytesPerRow];
+                int spp =[rep samplesPerPixel];
+                int  w =[rep pixelsWide];
+                int  h =[rep pixelsHigh];
+		MLogString(1 ,@"mask : (%d,%d) channel : %d (alpha: %d)",w,h,spp,[rep hasAlpha]);
+	}
+}
+
+- (IBAction) openMask: (id) sender
+{
+	MLogString(1 ,@"");
+        // Create the File Open Panel class.
+        NSOpenPanel* oPanel = [NSOpenPanel openPanel];
+
+        [oPanel setCanChooseDirectories:NO];
+        [oPanel setCanChooseFiles:YES];
+        [oPanel setCanCreateDirectories:YES];
+        [oPanel setAllowsMultipleSelection:NO];
+        [oPanel setAlphaValue:0.95];
+        [oPanel setTitle:@"Select a mask to use"];
+	[oPanel beginSheetForDirectory:nil
+		file:nil // TODO: better naming ?
+		modalForWindow:window
+		modalDelegate:self
+		didEndSelector:@selector(openMaskPanelDidEnd:returnCode:contextInfo:)
+				  contextInfo:NULL];
+}
+
 -(NSString*)outputfile;
 {
 	return _outputfile;
