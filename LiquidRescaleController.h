@@ -39,6 +39,11 @@
   IBOutlet NSButton* mPreserveSkinTonesButton;
   IBOutlet NSButton* mMaintainAspectButton;
 
+  IBOutlet NSButton* mPreserveMaskButton;
+  IBOutlet NSButton* mClearMaskButton;
+  IBOutlet NSButton* mResetMaskButton;
+  IBOutlet NSSlider* mBrushSizeSlider;
+  
   // ouput options
   IBOutlet NSTextField *mOuputFile;
   IBOutlet NSPopUpButton *mOutFormat;
@@ -117,6 +122,7 @@
 - (IBAction) revealInFinder:(id)sender;
 
 - (IBAction) LiquidRescale: (id)sender;
+- (IBAction) resetMask: (id)sender;
 
 -(NSString*) outputfile;
 -(void) setOutputfile:(NSString *)file;
