@@ -704,6 +704,8 @@ LqrRetVal my_progress_end(const gchar *message)
 
 	//TODO: [mEnergyCombo selectItemAtIndex:0];
 	[mResizeOrderCombo selectItemAtIndex:0];
+
+	[mBrushSizeSlider setFloatValue:10.0];
 	[self setupImageSize];
 }
 
@@ -1576,43 +1578,43 @@ LqrRetVal my_progress_end(const gchar *message)
 		NSLog(@"%s need to set after image",__PRETTY_FUNCTION__);
 	}
 	if (_imageMask) {
-		NSLog(@"%s need to set mask image",__PRETTY_FUNCTION__);
+		//NSLog(@"%s need to set mask image",__PRETTY_FUNCTION__);
+		NSImage* imgcrop = [_imageMask imageFromRect:selrect];
+		[_imageView setMaskImage: imgcrop];
 	}
 }
 
 #pragma mark Display
 
-- (NSBezierPath*) brushShapeCenterAtX:(double)x andY:(double)y;
+- (void) brushShapeCenterAtX:(double)x andY:(double)y;
 {
-	NSBezierPath* mShape;
-	
-	return mShape;
+        double mRadius = [mBrushSizeSlider doubleValue];
+	MLogString(1 ,@"radius : %f",mRadius);
+	// Create the shape of the tip of the brush. Code currently assumes the bounding
+	//      box of the shape is square (height == width)
+	NSRect mainOval = { { x, y } , { 2 * mRadius, 2 * mRadius } };
+
+	[_imageMask lockFocus];
+	[NSGraphicsContext saveGraphicsState];
+
+	NSButtonCell *selCell = [mMaskRadioButton selectedCell];
+	if ([selCell tag] == 0)
+		[_removalColor set];
+	else
+		[_retainColor set];
+
+	[[NSBezierPath bezierPathWithOvalInRect:mainOval] fill];
+
+	[NSGraphicsContext restoreGraphicsState];
+	[_imageMask unlockFocus];
 }
 
 - (void) imageDisplayViewMouseDown:(NSEvent*)event inView:(NSView*)view;
 {
 	MLogString(1 ,@"");
 	if (_imageMask != nil ) {
-		// TODO: rework it ... POC
-		double mRadius = 10.0; // TODO: interface ?
 		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:view];
-		// Create the shape of the tip of the brush. Code currently assumes the bounding
-		//	box of the shape is square (height == width)
-		NSRect mainOval = { { loc.x, loc.y } , { 2 * mRadius, 2 * mRadius } };
-		
-		[_imageMask lockFocus];
-		[NSGraphicsContext saveGraphicsState];
-					
-		NSButtonCell *selCell = [mMaskRadioButton selectedCell];
-		if ([selCell tag] == 0)
-			[_removalColor set];
-		else 
-			[_retainColor set];
-
-		[[NSBezierPath bezierPathWithOvalInRect:mainOval] fill];
-			
-		[NSGraphicsContext restoreGraphicsState];
-		[_imageMask unlockFocus];
+		[self brushShapeCenterAtX:loc.x andY:loc.y];	
 		[view setNeedsDisplay:YES];
 	}
 }
@@ -1621,26 +1623,8 @@ LqrRetVal my_progress_end(const gchar *message)
 {
 	MLogString(1 ,@"");
 	if (_imageMask !=  NULL) {
-		// TODO: rework it ... POC
-		double mRadius = 10.0; // TODO: interface ?
 		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:view];
-		// Create the shape of the tip of the brush. Code currently assumes the bounding
-		//	box of the shape is square (height == width)
-		NSRect mainOval = { { loc.x, loc.y } , { 2 * mRadius, 2 * mRadius } };
-		
-		[_imageMask lockFocus];
-		[NSGraphicsContext saveGraphicsState];
-				
-		NSButtonCell *selCell = [mMaskRadioButton selectedCell];
-		if ([selCell tag] == 0)
-			[_removalColor set];
-		else 
-			[_retainColor set];
-		
-		[[NSBezierPath bezierPathWithOvalInRect:mainOval] fill];
-		
-		[NSGraphicsContext restoreGraphicsState];
-		[_imageMask unlockFocus];
+		[self brushShapeCenterAtX:loc.x andY:loc.y];	
 		[view setNeedsDisplay:YES];
 	}
 }
