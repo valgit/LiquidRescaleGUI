@@ -13,6 +13,9 @@
 	// Initialization code here.
 	 _bgColor = [[NSColor blackColor] retain];
 	_displayAfter = NO;
+	_beforeImage = nil;
+	_afterImage = nil;
+	_maskImage = nil;
    }
    return self;
 }
@@ -23,6 +26,16 @@
 	[_afterImage release];
 	[_bgColor release];
 	[super dealloc];
+}
+
+- (void) setDelegate:(id)del;
+{
+	delegate = del;	
+}
+
+- (id) delegate;
+{
+	return delegate;
 }
 
 - (void) setBeforeImage:(NSImage*)image
@@ -55,6 +68,16 @@
 - (void)reloadImage;
 {
 	[self setNeedsDisplay:YES];
+}
+
+- (void) setMaskImage:(NSImage*)image
+{
+    NSImage *temp = [image retain];
+
+    [_maskImage release];
+    _maskImage = temp;
+    [_maskImage setScalesWhenResized:YES];
+    [self setNeedsDisplay:YES];
 }
 
 - (void)setBackgroundColor:(NSColor*)color
@@ -152,6 +175,15 @@
                                 operation:NSCompositeSourceOver
                                 fraction:1.0];
 
+	if (_maskImage) {
+		NSSize imageSize = [_maskImage size];
+		NSLog(@"%s image mask (%f,%f)",__PRETTY_FUNCTION__,
+			imageSize.width,imageSize.height);
+		[_maskImage drawInRect:destRect
+                                fromRect:NSMakeRect(0,0, imageSize.width,imageSize.height)
+                                operation:NSCompositeSourceOver
+                                fraction:1.0];
+	}
 #endif
   }
 }
@@ -181,32 +213,40 @@
 {
 	NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
 	double pressure = [event pressure];
-	  if(([event type] == NSTabletPoint)
-	|| ([event subtype] == NSTabletPointEventSubtype)) {
+	if(([event type] == NSTabletPoint) ||
+	   ([event subtype] == NSTabletPointEventSubtype)) {
 		int mask = [event buttonMask];
 		NSLog(@"%s -> tablette %x",__PRETTY_FUNCTION__,mask);
 		
-		if (mask && NSPenTipMask)
+		if (mask & NSPenTipMask)
 			NSLog(@"%s -> pentip",__PRETTY_FUNCTION__);
-		if (mask && NSPenLowerSideMask)
+		if (mask & NSPenLowerSideMask)
 			NSLog(@"%s -> NSPenLowerSide",__PRETTY_FUNCTION__);
-			if (mask && NSPenUpperSideMask)
+		if (mask & NSPenUpperSideMask)
 			NSLog(@"%s -> NSPenUpperSide",__PRETTY_FUNCTION__);
-			
 	}
 
         NSLog(@"%s -> (%f,%f) pres: %f",__PRETTY_FUNCTION__,loc.x,loc.y,pressure);
+	if (delegate && [delegate respondsToSelector:@selector(imageDisplayViewMouseDown:inView:)]) {
+		[delegate imageDisplayViewMouseDown:event inView:self];
+	}
 }
 
 - (void)mouseMoved: (NSEvent*)event
 {
-        NSLog(@"%s",__PRETTY_FUNCTION__);
+        //NSLog(@"%s",__PRETTY_FUNCTION__);
+	if (delegate && [delegate respondsToSelector:@selector(imageDisplayViewMouseMoved:inView:)]) {
+		[delegate imageDisplayViewMouseMoved:event inView:self];
+	}
 }
 
 - (void)mouseUp:(NSEvent *)event
 {
         NSLog(@"%s",__PRETTY_FUNCTION__);
 	NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
+	if (delegate && [delegate respondsToSelector:@selector(imageDisplayViewMouseUp:inView:)]) {
+		[delegate imageDisplayViewMouseUp:event inView:self];
+	}
 }
 
 - (void)mouseDragged:(NSEvent*)event
@@ -220,7 +260,24 @@
 #endif
 	NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
 	double pressure = [event pressure];
+	if (delegate && [delegate respondsToSelector:@selector(imageDisplayViewMouseDragged:inView:)]) {
+		[delegate imageDisplayViewMouseDragged:event inView:self];
+	}
 }
 
+#pragma mark -
+#pragma mark tablet
+
+- (void)tabletProximity:(NSEvent *)tabletEvent
+{
+    NSLog(@"%s capa: %d",__PRETTY_FUNCTION__,[tabletEvent capabilityMask]);
+    [super tabletProximity:tabletEvent];
+}
+
+- (void)tabletPoint:(NSEvent *)tabletEvent
+{
+    NSLog(@"%s",__PRETTY_FUNCTION__);
+    [super tabletPoint:tabletEvent];
+}
 @end
 

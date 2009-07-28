@@ -3,7 +3,8 @@ include $(GNUSTEP_MAKEFILES)/common.make
 APP_NAME = LiquidRescaleGUI
 LiquidRescaleGUI_OBJC_FILES = LiquidRescaleController.m  main.m   \
 NSImage-ProportionalScaling.m NSFileManager-Extensions.m  \
-MLog.m ImageDisplayView.m ImagePanelView.m NSImage+Cropped.m
+MLog.m ImageDisplayView.m ImagePanelView.m NSImage+Cropped.m \
+PasteBoardHandling.m
 
 LiquidRescaleGUI_MAIN_MODEL_FILE = MainMenu.nib
 

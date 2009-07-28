@@ -142,4 +142,7 @@
 - (IBAction) saveDocumentAs: (id)sender;
 
 - (void)setupImageSize;
+
+-(void)setZoomFactor:(double)factor;
+
 @end

@@ -6,8 +6,12 @@
 
 @interface ImageDisplayView : NSView
 {
+	IBOutlet id delegate;
+
 	NSImage* _beforeImage;
 	NSImage* _afterImage;
+
+	NSImage* _maskImage;
 
 	NSColor *_bgColor;
 
@@ -22,10 +26,23 @@
 - (NSImage*)afterImage;
 - (void)reloadImage;
 
+- (void) setMaskImage:(NSImage*)image;
 - (void)setDisplayAfter:(BOOL)state;
 
 - (void)setBackgroundColor:(NSColor*)color;
 - (NSColor*)backgroundColor;
+
+- (void) setDelegate:(id)del;
+- (id) delegate;
+
+@end
+
+@interface  ImageDisplayView (delegate)
+
+- (void) imageDisplayViewMouseDown:(NSEvent*)event inView:(NSView*)view;
+- (void) imageDisplayViewMouseMoved: (NSEvent*)event inView:(NSView*)view;
+- (void) imageDisplayViewMouseUp:(NSEvent *)event inView:(NSView*)view;
+- (void) imageDisplayViewMouseDragged:(NSEvent*)event inView:(NSView*)view;
 
 @end
 

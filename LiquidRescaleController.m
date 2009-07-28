@@ -1356,6 +1356,7 @@ LqrRetVal my_progress_end(const gchar *message)
                 int  w =[rep pixelsWide];
                 int  h =[rep pixelsHigh];
 		MLogString(1 ,@"mask : (%d,%d) channel : %d (alpha: %d)",w,h,spp,[rep hasAlpha]);
+		[_imageView setMaskImage:_imageMask];
 	}
 }
 
@@ -1378,6 +1379,22 @@ LqrRetVal my_progress_end(const gchar *message)
 		didEndSelector:@selector(openMaskPanelDidEnd:returnCode:contextInfo:)
 				  contextInfo:NULL];
 }
+
+#pragma mark -
+#pragma mark mask handling 
+
+- (IBAction) setBrushMask: (id)sender;
+{
+	MLogString(1 ,@"");
+}
+
+- (IBAction) resetMask: (id)sender;
+{
+	MLogString(1 ,@"");
+}
+
+#pragma mark -
+#pragma mark output handling 
 
 -(NSString*)outputfile;
 {
@@ -1484,6 +1501,12 @@ LqrRetVal my_progress_end(const gchar *message)
         //[_imageView setImageScaling:NSScaleProportionally];
         [_imageView setBeforeImage: imgcrop];
         //[imgcrop release];
+	if (_rescaleImage) {
+		NSLog(@"%s need to set after image",__PRETTY_FUNCTION__);
+	}
+	if (_imageMask) {
+		NSLog(@"%s need to set mask image",__PRETTY_FUNCTION__);
+	}
 }
 
 @end

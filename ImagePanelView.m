@@ -41,6 +41,7 @@
 
 - (void)reloadImage;
 {
+	[self selectionDidChange];
 	[self setNeedsDisplay:YES];
 }
 
@@ -186,20 +187,23 @@
 - (void) setDataSource:(id)source
 {
         NSLog(@"%s",__PRETTY_FUNCTION__);
-        [dataSource release];
-        dataSource = [source retain];
+        //[dataSource release];
+        //dataSource = [source retain];
+        dataSource = source;
 
         if (dataSource && [dataSource respondsToSelector:@selector(imagePanelViewImageSize:)]) {
 		NSSize datasize = [dataSource imagePanelViewImageSize:self];
 		[self setImageScale:datasize];
 	} else 
 		[self setImageScale:NSMakeSize(1.0,1.0)];
+	[self selectionDidChange];
 }
 
 - (void) setDelegate:(id)del
 {
-        [delegate release];
-        delegate = [del retain];
+//        [delegate release];
+//        delegate = [del retain];
+        delegate = del;
 }
 
 #pragma <Action & UI>
