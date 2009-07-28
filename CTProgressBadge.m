@@ -104,12 +104,14 @@
   
   [progressBadge lockFocus];
 	  [NSGraphicsContext saveGraphicsState];
+#ifndef GNUSTEP
 		  NSShadow *theShadow = [[NSShadow alloc] init];
 		  [theShadow setShadowOffset: NSMakeSize(0,-shadowOffset)];
 		  [theShadow setShadowBlurRadius:shadowBlurRadius];
 		  [theShadow setShadowColor:[[NSColor blackColor] colorWithAlphaComponent:shadowOpacity]];
 		  [theShadow set];
 		  [theShadow release];
+#endif
 			  [foregroundColor set];
 			  [[NSBezierPath bezierPathWithOvalInRect:pieRect] fill];
 	  [NSGraphicsContext restoreGraphicsState];

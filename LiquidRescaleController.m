@@ -1031,7 +1031,9 @@ LqrRetVal my_progress_end(const gchar *message)
 		//[LiquidRescaleTask release];
 		//LiquidRescaleTask=nil;
     }
+#ifndef GNUSTEP
 	RestoreApplicationDockTileImage();
+#endif
     [NSApp terminate:nil];
     return YES;
 }
@@ -1317,6 +1319,7 @@ LqrRetVal my_progress_end(const gchar *message)
 	MLogString(1 ,@"");
 	if (_rescaleImage != NULL) {
 		NSSavePanel *panel = [NSSavePanel savePanel];
+		[panel setAlphaValue:0.95];
 		[panel setCanCreateDirectories:NO];
 		//[panel setRequiredFileType:@"tiff"];
 		//TODO: [panel setAllowedFileTypes:[NSArray arrayWithObjects:@"tiff","jpeg",nil]];
@@ -1345,6 +1348,9 @@ LqrRetVal my_progress_end(const gchar *message)
 			LS_OK, NULL, NULL);
 	}
 }
+
+#pragma mark -
+#pragma mark Mask I/O
 
 - (void)openMaskPanelDidEnd:(NSOpenPanel *)openPanel
                   returnCode:(int)returnCode
@@ -1389,6 +1395,50 @@ LqrRetVal my_progress_end(const gchar *message)
 				  contextInfo:NULL];
 }
 
+- (void)saveMaskPanelDidEnd:(NSSavePanel *)savePanel
+                  returnCode:(int)returnCode
+                 contextInfo:(void *)contextInfo;
+{
+#pragma unused(contextInfo)
+        if(returnCode == NSOKButton) {
+                NSString *path = [savePanel filename];
+                [savePanel close];
+                MLogString(1 ,@"selected file : %@",path);
+                NSBitmapImageRep *rep = [NSBitmapImageRep imageRepWithData:[_imageMask TIFFRepresentation]];
+                NSData *photoData = [rep representationUsingType:NSPNGFileType properties:NULL];
+                BOOL status = [photoData writeToFile:path atomically:YES];
+                if(status)
+                       NSRunInformationalAlertPanel(@"Write Mask Complete.",
+                                        @"save to %@ done",LS_OK,nil,nil,path);
+                else
+                        NSRunInformationalAlertPanel(@"Write Mask Failed.",
+                                        @"save to %@ failed",LS_OK,nil,nil,path);
+        }
+}
+
+- (IBAction) saveMask: (id)sender;
+{
+#pragma unused(sender)
+        MLogString(1 ,@"");
+        if (_imageMask != NULL) {
+                NSSavePanel *panel = [NSSavePanel savePanel];
+		[panel setAlphaValue:0.95];
+                [panel setCanCreateDirectories:NO];
+                [panel setRequiredFileType:@"png"];
+                [panel setCanSelectHiddenExtension:YES]; // is it needed ?
+                [panel beginSheetForDirectory:nil
+                                 file:@"unnamed.png" // TODO: good name
+                           modalForWindow:window
+                                modalDelegate:self
+                           didEndSelector:@selector(saveMaskPanelDidEnd:returnCode:contextInfo:)
+                                  contextInfo:NULL];
+        } else {
+              NSRunCriticalAlertPanel ([[NSProcessInfo processInfo] processName],
+                        NSLocalizedString(@"No Image Mask Created",@""),
+                        LS_OK, NULL, NULL);
+        }
+}
+
 #pragma mark -
 #pragma mark mask handling 
 
@@ -1405,7 +1455,7 @@ LqrRetVal my_progress_end(const gchar *message)
 {
 	MLogString(1 ,@"");
 	
-	if (_imageMask != nil) 
+	if (_imageMask != NULL) 
 		[_imageMask release];
 	
 	NSSize imSize = [_image size];
@@ -1542,13 +1592,13 @@ LqrRetVal my_progress_end(const gchar *message)
 - (void) imageDisplayViewMouseDown:(NSEvent*)event inView:(NSView*)view;
 {
 	MLogString(1 ,@"");
-	if (_imageMask != nil) {
+	if (_imageMask != nil ) {
 		// TODO: rework it ... POC
 		double mRadius = 10.0; // TODO: interface ?
 		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:view];
 		// Create the shape of the tip of the brush. Code currently assumes the bounding
 		//	box of the shape is square (height == width)
-		NSRect mainOval = { loc.x, loc.y, 2 * mRadius, 2 * mRadius };
+		NSRect mainOval = { { loc.x, loc.y } , { 2 * mRadius, 2 * mRadius } };
 		
 		[_imageMask lockFocus];
 		[NSGraphicsContext saveGraphicsState];
@@ -1570,13 +1620,13 @@ LqrRetVal my_progress_end(const gchar *message)
 - (void) imageDisplayViewMouseDragged:(NSEvent*)event inView:(NSView*)view;
 {
 	MLogString(1 ,@"");
-	if (_imageMask != nil) {
+	if (_imageMask !=  NULL) {
 		// TODO: rework it ... POC
 		double mRadius = 10.0; // TODO: interface ?
 		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:view];
 		// Create the shape of the tip of the brush. Code currently assumes the bounding
 		//	box of the shape is square (height == width)
-		NSRect mainOval = { loc.x, loc.y, 2 * mRadius, 2 * mRadius };
+		NSRect mainOval = { { loc.x, loc.y } , { 2 * mRadius, 2 * mRadius } };
 		
 		[_imageMask lockFocus];
 		[NSGraphicsContext saveGraphicsState];
@@ -1941,7 +1991,9 @@ LqrRetVal my_progress_end(const gchar *message)
 		if (!_wResize || !_hResize) {
 		    [mProgressIndicator setDoubleValue:0];
 		    [mProgressIndicator stopAnimation:self];
+#ifndef GNUSTEP
 			RestoreApplicationDockTileImage();
+#endif
 		}
         else
             [mProgressIndicator setDoubleValue:50];
@@ -1952,7 +2004,9 @@ LqrRetVal my_progress_end(const gchar *message)
     {
         [mProgressIndicator setDoubleValue:0];
 	[mProgressIndicator stopAnimation:self];
+#ifndef GNUSTEP
 	RestoreApplicationDockTileImage();
+#endif
     }
     [mProgressText setStringValue:message];
 #ifdef GNUSTEP
