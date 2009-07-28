@@ -4,6 +4,7 @@
 
 @class ImagePanelView;
 @class ImageDisplayView;
+@class CTProgressBadge;
 
 #include <lqr.h>
 
@@ -70,6 +71,7 @@
   IBOutlet NSPanel *mProgressPanel;
   IBOutlet NSProgressIndicator *mProgressIndicator;
   IBOutlet NSTextField *mProgressText;
+  IBOutlet CTProgressBadge *myBadge;
  
   IBOutlet NSTableView* mTableImage;
   IBOutlet NSImageView *mPreviewImage;
@@ -101,6 +103,9 @@
     BOOL _hResize;
     BOOL _wResize;
     BOOL _stage;
+	
+	NSColor* _retainColor;
+	NSColor* _removalColor;
 }
 
 - (IBAction) cancel: (id)sender;

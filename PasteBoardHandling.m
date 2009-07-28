@@ -14,7 +14,7 @@
     NSArray 
         *types = [NSArray arrayWithObject:NSTIFFPboardType];
         
-    NSLog(@"copy");
+    //NSLog(@"copy");
     [pboard declareTypes:types owner:self];
     [pboard addTypes:types owner:self];
 }
@@ -34,7 +34,7 @@
     
 - (void)pasteboard:(NSPasteboard *)sender provideDataForType:(NSString *)type
 {
-    NSLog(@"pasteboard");
+    //NSLog(@"pasteboard");
     [sender setData:[_image TIFFRepresentation] forType:NSTIFFPboardType];
 }
 

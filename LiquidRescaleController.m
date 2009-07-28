@@ -11,6 +11,7 @@
 #import "MLog.h"
 #import "LiquidRescaleController.h"
 #import "NSFileManager-Extensions.h"
+#import "CTProgressBadge.h"
 
 #import "ImagePanelView.h"
 #import "ImageDisplayView.h"
@@ -197,6 +198,12 @@ LqrRetVal my_progress_end(const gchar *message)
 	_image = NULL;
 	//[mPreviewImage setImage:_image];
 	[self setZoomFactor:100.0];
+	[_imageView setDelegate:self]; // TODO: in nib
+	myBadge = [[CTProgressBadge alloc] init];
+	
+	// init brushes
+	_retainColor = [[NSColor colorWithCalibratedRed:0.0 green:1.0 blue:0.0 alpha:0.5] retain];
+	_removalColor = [[NSColor colorWithCalibratedRed:1.0 green:0.0 blue:0.0 alpha:0.5] retain];
 }
 
 - (id)init
@@ -226,6 +233,8 @@ LqrRetVal my_progress_end(const gchar *message)
 {
 	
 	[images release];
+	[_retainColor release];
+	[_removalColor release];
 	
 	if (useroptions != nil)
 		[useroptions dealloc];
@@ -1022,7 +1031,7 @@ LqrRetVal my_progress_end(const gchar *message)
 		//[LiquidRescaleTask release];
 		//LiquidRescaleTask=nil;
     }
-	
+	RestoreApplicationDockTileImage();
     [NSApp terminate:nil];
     return YES;
 }
@@ -1383,14 +1392,25 @@ LqrRetVal my_progress_end(const gchar *message)
 #pragma mark -
 #pragma mark mask handling 
 
+// select tool to draw on the mask
 - (IBAction) setBrushMask: (id)sender;
 {
-	MLogString(1 ,@"");
+			NSButtonCell *selCell = [sender selectedCell];
+	MLogString(1 ,@"Selected cell is %d", [selCell tag]);
+
 }
 
+// clear the mask ...
 - (IBAction) resetMask: (id)sender;
 {
 	MLogString(1 ,@"");
+	
+	if (_imageMask != nil) 
+		[_imageMask release];
+	
+	NSSize imSize = [_image size];
+	_imageMask = [[ NSImage alloc ] initWithSize:imSize];
+	[_imageView setMaskImage:_imageMask];
 }
 
 #pragma mark -
@@ -1485,6 +1505,7 @@ LqrRetVal my_progress_end(const gchar *message)
 }
 
 #pragma mark <AppDelegate>
+#pragma mark Panel
 
 - (void) imagePanelViewSelectionDidChange:(NSView*)imageView;
 {
@@ -1506,6 +1527,71 @@ LqrRetVal my_progress_end(const gchar *message)
 	}
 	if (_imageMask) {
 		NSLog(@"%s need to set mask image",__PRETTY_FUNCTION__);
+	}
+}
+
+#pragma mark Display
+
+- (NSBezierPath*) brushShapeCenterAtX:(double)x andY:(double)y;
+{
+	NSBezierPath* mShape;
+	
+	return mShape;
+}
+
+- (void) imageDisplayViewMouseDown:(NSEvent*)event inView:(NSView*)view;
+{
+	MLogString(1 ,@"");
+	if (_imageMask != nil) {
+		// TODO: rework it ... POC
+		double mRadius = 10.0; // TODO: interface ?
+		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:view];
+		// Create the shape of the tip of the brush. Code currently assumes the bounding
+		//	box of the shape is square (height == width)
+		NSRect mainOval = { loc.x, loc.y, 2 * mRadius, 2 * mRadius };
+		
+		[_imageMask lockFocus];
+		[NSGraphicsContext saveGraphicsState];
+					
+		NSButtonCell *selCell = [mMaskRadioButton selectedCell];
+		if ([selCell tag] == 0)
+			[_removalColor set];
+		else 
+			[_retainColor set];
+
+		[[NSBezierPath bezierPathWithOvalInRect:mainOval] fill];
+			
+		[NSGraphicsContext restoreGraphicsState];
+		[_imageMask unlockFocus];
+		[view setNeedsDisplay:YES];
+	}
+}
+
+- (void) imageDisplayViewMouseDragged:(NSEvent*)event inView:(NSView*)view;
+{
+	MLogString(1 ,@"");
+	if (_imageMask != nil) {
+		// TODO: rework it ... POC
+		double mRadius = 10.0; // TODO: interface ?
+		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:view];
+		// Create the shape of the tip of the brush. Code currently assumes the bounding
+		//	box of the shape is square (height == width)
+		NSRect mainOval = { loc.x, loc.y, 2 * mRadius, 2 * mRadius };
+		
+		[_imageMask lockFocus];
+		[NSGraphicsContext saveGraphicsState];
+				
+		NSButtonCell *selCell = [mMaskRadioButton selectedCell];
+		if ([selCell tag] == 0)
+			[_removalColor set];
+		else 
+			[_retainColor set];
+		
+		[[NSBezierPath bezierPathWithOvalInRect:mainOval] fill];
+		
+		[NSGraphicsContext restoreGraphicsState];
+		[_imageMask unlockFocus];
+		[view setNeedsDisplay:YES];
 	}
 }
 
@@ -1838,6 +1924,7 @@ LqrRetVal my_progress_end(const gchar *message)
         }
 
   [mProgressIndicator setDoubleValue:m_progress];
+  [myBadge badgeApplicationDockIconWithProgress:(m_progress/100.0) insetX:2 y:3];
   //[mProgressText setStringValue:percent];
   //MLogString(1 ,@"percent: %d", m_progress);
   //NSLog(@"%s thread is : %@",__PRETTY_FUNCTION__,[NSThread currentThread]);
@@ -1854,6 +1941,7 @@ LqrRetVal my_progress_end(const gchar *message)
 		if (!_wResize || !_hResize) {
 		    [mProgressIndicator setDoubleValue:0];
 		    [mProgressIndicator stopAnimation:self];
+			RestoreApplicationDockTileImage();
 		}
         else
             [mProgressIndicator setDoubleValue:50];
@@ -1864,6 +1952,7 @@ LqrRetVal my_progress_end(const gchar *message)
     {
         [mProgressIndicator setDoubleValue:0];
 	[mProgressIndicator stopAnimation:self];
+	RestoreApplicationDockTileImage();
     }
     [mProgressText setStringValue:message];
 #ifdef GNUSTEP

@@ -226,7 +226,7 @@
 			NSLog(@"%s -> NSPenUpperSide",__PRETTY_FUNCTION__);
 	}
 
-        NSLog(@"%s -> (%f,%f) pres: %f",__PRETTY_FUNCTION__,loc.x,loc.y,pressure);
+//        NSLog(@"%s -> (%f,%f) pres: %f",__PRETTY_FUNCTION__,loc.x,loc.y,pressure);
 	if (delegate && [delegate respondsToSelector:@selector(imageDisplayViewMouseDown:inView:)]) {
 		[delegate imageDisplayViewMouseDown:event inView:self];
 	}
@@ -242,7 +242,7 @@
 
 - (void)mouseUp:(NSEvent *)event
 {
-        NSLog(@"%s",__PRETTY_FUNCTION__);
+  //      NSLog(@"%s",__PRETTY_FUNCTION__);
 	NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
 	if (delegate && [delegate respondsToSelector:@selector(imageDisplayViewMouseUp:inView:)]) {
 		[delegate imageDisplayViewMouseUp:event inView:self];
