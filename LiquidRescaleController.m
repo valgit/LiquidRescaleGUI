@@ -204,6 +204,9 @@ LqrRetVal my_progress_end(const gchar *message)
 	// init brushes
 	_retainColor = [[NSColor colorWithCalibratedRed:0.0 green:1.0 blue:0.0 alpha:0.5] retain];
 	_removalColor = [[NSColor colorWithCalibratedRed:1.0 green:0.0 blue:0.0 alpha:0.5] retain];
+	_clearColor = [[NSColor colorWithCalibratedRed:0.0 green:0.0 blue:0.0 alpha:1.0] retain];
+
+	[mMaskToolButton setSelectedSegment:0];
 }
 
 - (id)init
@@ -225,7 +228,10 @@ LqrRetVal my_progress_end(const gchar *message)
         lqr_progress_set_end_width_message(progress, "done");
         lqr_progress_set_end_height_message(progress, "done");
 	lqr_progress_set_update_step(progress, 0.01);
-	
+
+	mLastPoint = NSZeroPoint;
+	mLeftOverDistance = 0.0;	
+
 	return self;
 }
 
@@ -706,6 +712,7 @@ LqrRetVal my_progress_end(const gchar *message)
 	[mResizeOrderCombo selectItemAtIndex:0];
 
 	[mBrushSizeSlider setFloatValue:10.0];
+	[mBrushWeightSlider setFloatValue:1.0];
 	[self setupImageSize];
 }
 
@@ -1447,9 +1454,15 @@ LqrRetVal my_progress_end(const gchar *message)
 // select tool to draw on the mask
 - (IBAction) setBrushMask: (id)sender;
 {
-			NSButtonCell *selCell = [sender selectedCell];
+	NSButtonCell *selCell = [sender selectedCell];
 	MLogString(1 ,@"Selected cell is %d", [selCell tag]);
 
+}
+
+- (IBAction) setMaskTool: (id)sender;
+{
+	int selectedSegment = [sender selectedSegment];
+	MLogString(1 ,@"Selected cell is %d", selectedSegment);
 }
 
 // clear the mask ...
@@ -1586,27 +1599,100 @@ LqrRetVal my_progress_end(const gchar *message)
 
 #pragma mark Display
 
-- (void) brushShapeCenterAtX:(double)x andY:(double)y;
+- (void) brushShapeCenterAt:(NSPoint)pt
 {
         double mRadius = [mBrushSizeSlider doubleValue];
-	MLogString(1 ,@"radius : %f",mRadius);
+	double mWeight = [mBrushWeightSlider doubleValue];
+	MLogString(1 ,@"radius : %f w: %f",mRadius, mWeight);
 	// Create the shape of the tip of the brush. Code currently assumes the bounding
 	//      box of the shape is square (height == width)
-	NSRect mainOval = { { x, y } , { 2 * mRadius, 2 * mRadius } };
+	NSRect mainOval = { { pt.x, pt.y } , { 2 * mRadius, 2 * mRadius } };
 
-	[_imageMask lockFocus];
-	[NSGraphicsContext saveGraphicsState];
 
-	NSButtonCell *selCell = [mMaskRadioButton selectedCell];
-	if ([selCell tag] == 0)
-		[_removalColor set];
-	else
+	switch ([mMaskToolButton selectedSegment]) {
+	case 0 : // retain
 		[_retainColor set];
+		break;
+	case 1 : // removal
+		[_removalColor set];
+		break;
+	case 3 : // clear
+		[_clearColor set];
+		break;
+	}
 
 	[[NSBezierPath bezierPathWithOvalInRect:mainOval] fill];
 
-	[NSGraphicsContext restoreGraphicsState];
-	[_imageMask unlockFocus];
+}
+
+- (float)stampBrushfrom:(NSPoint)startPoint 
+	to:(NSPoint)endPoint leftOverDistance:(float)leftOverDistance
+{
+        // Set the spacing between the stamps. By trail and error, I've
+        //      determined that 1/10 of the brush width (currently hard coded to 20)
+        //      is a good interval.
+        //float spacing = CGImageGetWidth(mask) * 0.1;
+        float spacing = [mBrushSizeSlider doubleValue] * 0.1;
+
+        // Anything less that half a pixel is overkill and could hurt performance.
+        if ( spacing < 0.5 )
+                spacing = 0.5;
+
+        // Determine the delta of the x and y. This will determine the slope
+        //      of the line we want to draw.
+        float deltaX = endPoint.x - startPoint.x;
+        float deltaY = endPoint.y - startPoint.y;
+
+        // Normalize the delta vector we just computed, and that becomes our step increment
+        //      for drawing our line, since the distance of a normalized vector is always 1
+        float distance = sqrt( deltaX * deltaX + deltaY * deltaY );
+        float stepX = 0.0;
+        float stepY = 0.0;
+        if ( distance > 0.0 ) {
+                float invertDistance = 1.0 / distance;
+                stepX = deltaX * invertDistance;
+                stepY = deltaY * invertDistance;
+       }
+
+        float offsetX = 0.0;
+        float offsetY = 0.0;
+
+        // We're careful to only stamp at the specified interval, so its possible
+        //      that we have the last part of the previous line left to draw. Be sure
+        //      to add that into the total distance we have to draw.
+        float totalDistance = leftOverDistance + distance;
+
+        // While we still have distance to cover, stamp
+        while ( totalDistance >= spacing ) {
+                // Increment where we put the stamp
+                if ( leftOverDistance > 0 ) {
+                        // If we're making up distance we didn't cover the last
+                        //      time we drew a line, take that into account when calculating
+                        //      the offset. leftOverDistance is always < spacing.
+                        offsetX += stepX * (spacing - leftOverDistance);
+                        offsetY += stepY * (spacing - leftOverDistance);
+
+                        leftOverDistance -= spacing;
+                } else {
+                        // The normal case. The offset increment is the normalized vector
+                        //      times the spacing
+                        offsetX += stepX * spacing;
+                        offsetY += stepY * spacing;
+                }
+
+                // Calculate where to put the current stamp at.
+                NSPoint stampAt = NSMakePoint(startPoint.x + offsetX, startPoint.y + offsetY);
+
+                // Ka-chunk! Draw the image at the current location
+                [self brushShapeCenterAt:stampAt];
+
+                // Remove the distance we just covered
+                totalDistance -= spacing;
+        }
+
+        // Return the distance that we didn't get to cover when drawing the line.
+        //      It is going to be less than spacing.
+        return totalDistance;
 }
 
 - (void) imageDisplayViewMouseDown:(NSEvent*)event inView:(NSView*)view;
@@ -1614,7 +1700,17 @@ LqrRetVal my_progress_end(const gchar *message)
 	MLogString(1 ,@"");
 	if (_imageMask != nil ) {
 		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:view];
-		[self brushShapeCenterAtX:loc.x andY:loc.y];	
+		[_imageMask lockFocus];
+		[NSGraphicsContext saveGraphicsState];
+
+		[self brushShapeCenterAt:loc];	
+
+		[NSGraphicsContext restoreGraphicsState];
+		[_imageMask unlockFocus];
+
+	        mLastPoint = loc;
+        	mLeftOverDistance = 0.0;
+
 		[view setNeedsDisplay:YES];
 	}
 }
@@ -1624,7 +1720,16 @@ LqrRetVal my_progress_end(const gchar *message)
 	MLogString(1 ,@"");
 	if (_imageMask !=  NULL) {
 		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:view];
-		[self brushShapeCenterAtX:loc.x andY:loc.y];	
+		[_imageMask lockFocus];
+		[NSGraphicsContext saveGraphicsState];
+
+		//[self brushShapeCenterAt:loc];	
+		mLeftOverDistance = [self stampBrushfrom:mLastPoint to:loc leftOverDistance:mLeftOverDistance];
+
+		[NSGraphicsContext restoreGraphicsState];
+		[_imageMask unlockFocus];
+
+		mLastPoint = loc;
 		[view setNeedsDisplay:YES];
 	}
 }

@@ -19,6 +19,9 @@ InfoPlist.strings
 
 LiquidRescaleGUI_RESOURCE_FILES = \
 Info.plist\
+toolBrush.tif\
+toolDelete.tif\
+toolErase.tif\
 Remove.tiff\
 image_broken.png\
 Add.tiff

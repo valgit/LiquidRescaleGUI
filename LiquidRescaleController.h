@@ -40,7 +40,7 @@
   IBOutlet NSButton* mPreserveSkinTonesButton;
   IBOutlet NSButton* mMaintainAspectButton;
 
-  IBOutlet id mMaskToolButton;
+  IBOutlet NSSegmentedControl*  mMaskToolButton;
   IBOutlet NSButton* mResetMaskButton;
   IBOutlet NSSlider* mBrushSizeSlider;
   IBOutlet NSSlider* mBrushWeightSlider;
@@ -107,6 +107,10 @@
 	
 	NSColor* _retainColor;
 	NSColor* _removalColor;
+	NSColor* _clearColor;
+
+	NSPoint mLastPoint;
+        float mLeftOverDistance;
 }
 
 - (IBAction) cancel: (id)sender;
