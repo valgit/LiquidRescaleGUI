@@ -1485,8 +1485,8 @@ NSBitmapImageRep *mask_rep;
 
 	NSBitmapImageRep *destImageRep = [[[NSBitmapImageRep alloc]
                        initWithBitmapDataPlanes:NULL
-                                     pixelsWide:imSize.width
-                                     pixelsHigh:imSize.height
+                                     pixelsWide:(int)imSize.width
+                                     pixelsHigh:(int)imSize.height
                                   bitsPerSample:8 
                                 samplesPerPixel:4
                                        hasAlpha:YES
@@ -1494,7 +1494,7 @@ NSBitmapImageRep *mask_rep;
                                  colorSpaceName:NSCalibratedRGBColorSpace
                                     bytesPerRow:0 // (spp*width)
                                    bitsPerPixel:32 ] autorelease];
-
+	
 	[_imageMask addRepresentation:destImageRep];
 	//[_imageMask setCacheMode: NSImageCacheNever];
 	mask_rep = destImageRep;
@@ -1735,8 +1735,8 @@ NSBitmapImageRep *mask_rep;
 		[_imageMask lockFocus];
 		//[_imageMask lockFocusOnRepresentation:mask_rep];
 		[NSGraphicsContext saveGraphicsState];
-		[NSGraphicsContext setCurrentContext:[NSGraphicsContext
-                        graphicsContextWithBitmapImageRep:mask_rep]];
+		//[NSGraphicsContext setCurrentContext:[NSGraphicsContext
+        //                graphicsContextWithBitmapImageRep:mask_rep]];
 
 		[self brushShapeCenterAt:loc];	
 
@@ -1765,8 +1765,8 @@ NSBitmapImageRep *mask_rep;
 
 		[_imageMask lockFocus];
 		[NSGraphicsContext saveGraphicsState];
-		[NSGraphicsContext setCurrentContext:[NSGraphicsContext
-                        graphicsContextWithBitmapImageRep:mask_rep]];
+		//[NSGraphicsContext setCurrentContext:[NSGraphicsContext
+          //              graphicsContextWithBitmapImageRep:mask_rep]];
 
 		//[self brushShapeCenterAt:loc];	
 		mLeftOverDistance = [self stampBrushfrom:mLastPoint to:loc leftOverDistance:mLeftOverDistance];

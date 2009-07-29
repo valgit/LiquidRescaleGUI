@@ -258,8 +258,22 @@
     newPoint.y -= mouseDownPoint.y;
     [self setFrameOrigin:newPoint];
 #endif
-	NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
 	double pressure = [event pressure];
+	if(([event type] == NSTabletPoint) ||
+	   ([event subtype] == NSTabletPointEventSubtype)) {
+		int mask = [event buttonMask];
+		NSLog(@"%s -> tablette %x",__PRETTY_FUNCTION__,mask);
+		
+		if (mask & NSPenTipMask)
+			NSLog(@"%s -> pentip",__PRETTY_FUNCTION__);
+		if (mask & NSPenLowerSideMask)
+			NSLog(@"%s -> NSPenLowerSide",__PRETTY_FUNCTION__);
+		if (mask & NSPenUpperSideMask)
+			NSLog(@"%s -> NSPenUpperSide",__PRETTY_FUNCTION__);
+	}
+
+	NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
+	NSLog(@"%s -> (%f,%f) pres: %f",__PRETTY_FUNCTION__,loc.x,loc.y,pressure);
 	if (delegate && [delegate respondsToSelector:@selector(imageDisplayViewMouseDragged:inView:)]) {
 		[delegate imageDisplayViewMouseDragged:event inView:self];
 	}
@@ -271,6 +285,7 @@
 - (void)tabletProximity:(NSEvent *)tabletEvent
 {
     NSLog(@"%s capa: %d",__PRETTY_FUNCTION__,[tabletEvent capabilityMask]);
+	//[theEvent isEnteringProximity]
     [super tabletProximity:tabletEvent];
 }
 
