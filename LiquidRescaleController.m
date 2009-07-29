@@ -158,6 +158,9 @@ LqrRetVal my_progress_end(const gchar *message)
  * LQR_ER_BRIGHTNESS (sobel)
  */
 
+// TODO: test
+NSBitmapImageRep *mask_rep;
+
 @implementation LiquidRescaleController
 
 
@@ -204,7 +207,7 @@ LqrRetVal my_progress_end(const gchar *message)
 	// init brushes
 	_retainColor = [[NSColor colorWithCalibratedRed:0.0 green:1.0 blue:0.0 alpha:0.5] retain];
 	_removalColor = [[NSColor colorWithCalibratedRed:1.0 green:0.0 blue:0.0 alpha:0.5] retain];
-	_clearColor = [[NSColor colorWithCalibratedRed:0.0 green:0.0 blue:0.0 alpha:1.0] retain];
+	_clearColor = [[NSColor colorWithCalibratedRed:0.0 green:0.0 blue:0.0 alpha:0.0] retain];
 
 	[mMaskToolButton setSelectedSegment:0];
 }
@@ -1380,6 +1383,7 @@ LqrRetVal my_progress_end(const gchar *message)
                 int  w =[rep pixelsWide];
                 int  h =[rep pixelsHigh];
 		MLogString(1 ,@"mask : (%d,%d) channel : %d (alpha: %d)",w,h,spp,[rep hasAlpha]);
+		MLogString(1 ,@"img rep  : %@",[_imageMask representations]);
 		[_imageView setMaskImage:_imageMask];
 	}
 }
@@ -1414,7 +1418,7 @@ LqrRetVal my_progress_end(const gchar *message)
                 [savePanel close];
                 MLogString(1 ,@"selected file : %@",path);
                 NSBitmapImageRep *rep = [NSBitmapImageRep imageRepWithData:[_imageMask TIFFRepresentation]];
-                NSData *photoData = [rep representationUsingType:NSPNGFileType properties:NULL];
+                NSData *photoData = [rep representationUsingType:NSTIFFFileType properties:NULL];
                 BOOL status = [photoData writeToFile:path atomically:YES];
                 if(status)
                        NSRunInformationalAlertPanel(@"Write Mask Complete.",
@@ -1433,10 +1437,10 @@ LqrRetVal my_progress_end(const gchar *message)
                 NSSavePanel *panel = [NSSavePanel savePanel];
 		[panel setAlphaValue:0.95];
                 [panel setCanCreateDirectories:NO];
-                [panel setRequiredFileType:@"png"];
+                [panel setRequiredFileType:@"tif"];
                 [panel setCanSelectHiddenExtension:YES]; // is it needed ?
                 [panel beginSheetForDirectory:nil
-                                 file:@"unnamed.png" // TODO: good name
+                                 file:@"unnamed.tif" // TODO: good name
                            modalForWindow:window
                                 modalDelegate:self
                            didEndSelector:@selector(saveMaskPanelDidEnd:returnCode:contextInfo:)
@@ -1470,11 +1474,31 @@ LqrRetVal my_progress_end(const gchar *message)
 {
 	MLogString(1 ,@"");
 	
+	//MLogString(1 ,@"im : (%@)",[_imageMask representations]);
 	if (_imageMask != NULL) 
 		[_imageMask release];
 	
 	NSSize imSize = [_image size];
+	//MLogString(1 ,@"size is : (%f,%f)",imSize.width,imSize.height);
 	_imageMask = [[ NSImage alloc ] initWithSize:imSize];
+	//MLogString(1 ,@"im : (%@)",[_imageMask representations]);
+
+	NSBitmapImageRep *destImageRep = [[[NSBitmapImageRep alloc]
+                       initWithBitmapDataPlanes:NULL
+                                     pixelsWide:imSize.width
+                                     pixelsHigh:imSize.height
+                                  bitsPerSample:8 
+                                samplesPerPixel:4
+                                       hasAlpha:YES
+                                       isPlanar:NO
+                                 colorSpaceName:NSCalibratedRGBColorSpace
+                                    bytesPerRow:0 // (spp*width)
+                                   bitsPerPixel:32 ] autorelease];
+
+	[_imageMask addRepresentation:destImageRep];
+	//[_imageMask setCacheMode: NSImageCacheNever];
+	mask_rep = destImageRep;
+	//MLogString(1 ,@"im : (%@)",[_imageMask representations]);
 	[_imageView setMaskImage:_imageMask];
 }
 
@@ -1709,10 +1733,14 @@ LqrRetVal my_progress_end(const gchar *message)
 		//NSLog(@"%s loc sel after : %f %f",__PRETTY_FUNCTION__,loc.x,loc.y);
 
 		[_imageMask lockFocus];
+		//[_imageMask lockFocusOnRepresentation:mask_rep];
 		[NSGraphicsContext saveGraphicsState];
+		[NSGraphicsContext setCurrentContext:[NSGraphicsContext
+                        graphicsContextWithBitmapImageRep:mask_rep]];
 
 		[self brushShapeCenterAt:loc];	
 
+		//[_imageMask recache];
 		[NSGraphicsContext restoreGraphicsState];
 		[_imageMask unlockFocus];
 
@@ -1737,10 +1765,13 @@ LqrRetVal my_progress_end(const gchar *message)
 
 		[_imageMask lockFocus];
 		[NSGraphicsContext saveGraphicsState];
+		[NSGraphicsContext setCurrentContext:[NSGraphicsContext
+                        graphicsContextWithBitmapImageRep:mask_rep]];
 
 		//[self brushShapeCenterAt:loc];	
 		mLeftOverDistance = [self stampBrushfrom:mLastPoint to:loc leftOverDistance:mLeftOverDistance];
 
+		//[_imageMask recache];
 		[NSGraphicsContext restoreGraphicsState];
 		[_imageMask unlockFocus];
 
@@ -1760,14 +1791,15 @@ LqrRetVal my_progress_end(const gchar *message)
 		loc.x += anchor.x;
 		loc.y += anchor.y;
 
-		[_imageMask lockFocus];
 		[NSGraphicsContext saveGraphicsState];
+		[_imageMask lockFocus];
 
 		// Stamp the brush in a line, from the last mouse location to the current one
 		mLeftOverDistance = [self stampBrushfrom:mLastPoint to:loc leftOverDistance:mLeftOverDistance];
 
-		[NSGraphicsContext restoreGraphicsState];
 		[_imageMask unlockFocus];
+		[_imageMask recache];
+		[NSGraphicsContext restoreGraphicsState];
 
 		mLastPoint = NSZeroPoint;
 		mLeftOverDistance = 0.0;
