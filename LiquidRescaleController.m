@@ -1034,7 +1034,7 @@ LqrRetVal my_progress_end(const gchar *message)
 		//LiquidRescaleTask=nil;
     }
 #ifndef GNUSTEP
-	RestoreApplicationDockTileImage();
+	// 10.5 ? RestoreApplicationDockTileImage();
 #endif
     [NSApp terminate:nil];
     return YES;
@@ -1976,7 +1976,7 @@ LqrRetVal my_progress_end(const gchar *message)
 		    [mProgressIndicator setDoubleValue:0];
 		    [mProgressIndicator stopAnimation:self];
 #ifndef GNUSTEP
-			RestoreApplicationDockTileImage();
+			// 10.5 RestoreApplicationDockTileImage();
 #endif
 		}
         else
@@ -1989,7 +1989,7 @@ LqrRetVal my_progress_end(const gchar *message)
         [mProgressIndicator setDoubleValue:0];
 	[mProgressIndicator stopAnimation:self];
 #ifndef GNUSTEP
-	RestoreApplicationDockTileImage();
+	// 10.5 RestoreApplicationDockTileImage();
 #endif
     }
     [mProgressText setStringValue:message];

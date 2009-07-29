@@ -40,9 +40,10 @@
   IBOutlet NSButton* mPreserveSkinTonesButton;
   IBOutlet NSButton* mMaintainAspectButton;
 
-  IBOutlet NSMatrix* mMaskRadioButton;
+  IBOutlet id mMaskToolButton;
   IBOutlet NSButton* mResetMaskButton;
   IBOutlet NSSlider* mBrushSizeSlider;
+  IBOutlet NSSlider* mBrushWeightSlider;
   
   // ouput options
   IBOutlet NSTextField *mOuputFile;
@@ -127,7 +128,10 @@
 
 - (IBAction) LiquidRescale: (id)sender;
 - (IBAction) setBrushMask: (id)sender;
+- (IBAction) setMaskTool: (id)sender;
 - (IBAction) resetMask: (id)sender;
+
+- (IBAction) setPreserveSkin: (id)sender;
 
 -(NSString*) outputfile;
 -(void) setOutputfile:(NSString *)file;

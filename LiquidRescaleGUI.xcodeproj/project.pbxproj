@@ -22,6 +22,9 @@
 		1A18772C1015D3A7002EC52F /* MLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A18772A1015D3A7002EC52F /* MLog.m */; };
 		1A1877341015D495002EC52F /* ImageDisplayView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A1877311015D495002EC52F /* ImageDisplayView.m */; };
 		1A1877351015D495002EC52F /* ImagePanelView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A1877321015D495002EC52F /* ImagePanelView.m */; };
+		1A383AAA10202030007338EA /* toolErase.tif in Resources */ = {isa = PBXBuildFile; fileRef = 1A383AA810202030007338EA /* toolErase.tif */; };
+		1A383AAB10202030007338EA /* toolBrush.tif in Resources */ = {isa = PBXBuildFile; fileRef = 1A383AA910202030007338EA /* toolBrush.tif */; };
+		1A383AAD102020B9007338EA /* toolDelete.tif in Resources */ = {isa = PBXBuildFile; fileRef = 1A383AAC102020B9007338EA /* toolDelete.tif */; };
 		1A71133C1016C47300E4012D /* NSImage+Cropped.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A71133B1016C47300E4012D /* NSImage+Cropped.m */; };
 		1AE5FB78101664CA00E4D78C /* liblqr-1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AE5FB77101664CA00E4D78C /* liblqr-1.a */; };
 		1AE5FB7C101664EB00E4D78C /* libglib-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AE5FB7B101664EB00E4D78C /* libglib-2.0.a */; };
@@ -60,6 +63,9 @@
 		1A1877311015D495002EC52F /* ImageDisplayView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageDisplayView.m; sourceTree = "<group>"; };
 		1A1877321015D495002EC52F /* ImagePanelView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImagePanelView.m; sourceTree = "<group>"; };
 		1A1877331015D495002EC52F /* ImagePanelView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImagePanelView.h; sourceTree = "<group>"; };
+		1A383AA810202030007338EA /* toolErase.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = toolErase.tif; sourceTree = "<group>"; };
+		1A383AA910202030007338EA /* toolBrush.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = toolBrush.tif; sourceTree = "<group>"; };
+		1A383AAC102020B9007338EA /* toolDelete.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = toolDelete.tif; sourceTree = "<group>"; };
 		1A71133A1016C47300E4012D /* NSImage+Cropped.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSImage+Cropped.h"; sourceTree = "<group>"; };
 		1A71133B1016C47300E4012D /* NSImage+Cropped.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSImage+Cropped.m"; sourceTree = "<group>"; };
 		1AE5FB77101664CA00E4D78C /* liblqr-1.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "liblqr-1.a"; path = "osxlibs/lib/liblqr-1.a"; sourceTree = "<group>"; };
@@ -175,6 +181,9 @@
 				1A1877071015D2EF002EC52F /* image_broken.png */,
 				1A1877081015D2EF002EC52F /* Remove.tiff */,
 				1A1877091015D2EF002EC52F /* update.tiff */,
+				1A383AA810202030007338EA /* toolErase.tif */,
+				1A383AA910202030007338EA /* toolBrush.tif */,
+				1A383AAC102020B9007338EA /* toolDelete.tif */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
 			);
@@ -239,6 +248,9 @@
 				1A18770B1015D2EF002EC52F /* image_broken.png in Resources */,
 				1A18770C1015D2EF002EC52F /* Remove.tiff in Resources */,
 				1A18770D1015D2EF002EC52F /* update.tiff in Resources */,
+				1A383AAA10202030007338EA /* toolErase.tif in Resources */,
+				1A383AAB10202030007338EA /* toolBrush.tif in Resources */,
+				1A383AAD102020B9007338EA /* toolDelete.tif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
