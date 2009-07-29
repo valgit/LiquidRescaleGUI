@@ -1700,6 +1700,14 @@ LqrRetVal my_progress_end(const gchar *message)
 	MLogString(1 ,@"");
 	if (_imageMask != nil ) {
 		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:view];
+
+		//NSLog(@"%s loc sel : %f %f",__PRETTY_FUNCTION__,loc.x,loc.y);
+		NSPoint anchor = [_panelImageView anchor];
+		//NSLog(@"%s anchor sel : %f %f",__PRETTY_FUNCTION__,anchor.x,anchor.y);
+		loc.x += anchor.x;
+		loc.y += anchor.y;
+		//NSLog(@"%s loc sel after : %f %f",__PRETTY_FUNCTION__,loc.x,loc.y);
+
 		[_imageMask lockFocus];
 		[NSGraphicsContext saveGraphicsState];
 
@@ -1711,6 +1719,7 @@ LqrRetVal my_progress_end(const gchar *message)
 	        mLastPoint = loc;
         	mLeftOverDistance = 0.0;
 
+		// very inefficient
 		[view setNeedsDisplay:YES];
 	}
 }
@@ -1720,6 +1729,12 @@ LqrRetVal my_progress_end(const gchar *message)
 	MLogString(1 ,@"");
 	if (_imageMask !=  NULL) {
 		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:view];
+
+		NSPoint anchor = [_panelImageView anchor];
+		//NSLog(@"%s anchor sel : %f %f",__PRETTY_FUNCTION__,anchor.x,anchor.y);
+		loc.x += anchor.x;
+		loc.y += anchor.y;
+
 		[_imageMask lockFocus];
 		[NSGraphicsContext saveGraphicsState];
 
@@ -1730,6 +1745,34 @@ LqrRetVal my_progress_end(const gchar *message)
 		[_imageMask unlockFocus];
 
 		mLastPoint = loc;
+		// very inefficient
+		[view setNeedsDisplay:YES];
+	}
+}
+
+- (void) imageDisplayViewMouseUp:(NSEvent*)event inView:(NSView*)view;
+{
+	MLogString(1 ,@"");
+	if (_imageMask !=  NULL) {
+		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:view];
+		NSPoint anchor = [_panelImageView anchor];
+		//NSLog(@"%s anchor sel : %f %f",__PRETTY_FUNCTION__,anchor.x,anchor.y);
+		loc.x += anchor.x;
+		loc.y += anchor.y;
+
+		[_imageMask lockFocus];
+		[NSGraphicsContext saveGraphicsState];
+
+		// Stamp the brush in a line, from the last mouse location to the current one
+		mLeftOverDistance = [self stampBrushfrom:mLastPoint to:loc leftOverDistance:mLeftOverDistance];
+
+		[NSGraphicsContext restoreGraphicsState];
+		[_imageMask unlockFocus];
+
+		mLastPoint = NSZeroPoint;
+		mLeftOverDistance = 0.0;
+
+		// very inefficient
 		[view setNeedsDisplay:YES];
 	}
 }
@@ -2101,6 +2144,14 @@ LqrRetVal my_progress_end(const gchar *message)
 #ifdef GNUSTEP
 	[mProgressIndicator displayIfNeeded];
 #endif
+// TODO: int req = [NSApp requestUserAttention:NSInformationalRequest];
+//	cancelUserAttentionRequest
+// note : in 10.5 :
+/* 
+ * NSDockTile *tile = [[NSApplication sharedApplication] dockTile];
+ * [tile setBadgeLabel:@"Lots"];
+ */
+
 }
 
 - (void) buildSkinToneBias;
