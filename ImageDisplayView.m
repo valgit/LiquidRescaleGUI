@@ -273,7 +273,10 @@
 	}
 
 	NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
+	NSPoint tilt = [event tilt];
+	double rotation = [event rotation];
 	NSLog(@"%s -> (%f,%f) pres: %f",__PRETTY_FUNCTION__,loc.x,loc.y,pressure);
+	NSLog(@"%s -> tilf (%f,%f) rot : %f",__PRETTY_FUNCTION__,tilt.x,tilt.y,rotation);
 	if (delegate && [delegate respondsToSelector:@selector(imageDisplayViewMouseDragged:inView:)]) {
 		[delegate imageDisplayViewMouseDragged:event inView:self];
 	}
@@ -285,7 +288,24 @@
 - (void)tabletProximity:(NSEvent *)tabletEvent
 {
     NSLog(@"%s capa: %d",__PRETTY_FUNCTION__,[tabletEvent capabilityMask]);
+    if ([tabletEvent capabilityMask] & 0x0200)
+	NSLog(@"%s capa: has absoluteZ",__PRETTY_FUNCTION__);
+    if ([tabletEvent capabilityMask] & 0x0800)
+	NSLog(@"%s capa: has tangentialPressure ",__PRETTY_FUNCTION__);
 	//[theEvent isEnteringProximity]
+#ifndef GNUSTEP
+    if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_3) {
+  	if ([theEvent isEnteringProximity] && [theEvent pointingDeviceType] == NSEraserPointingDevice) {
+  		NSLog(@"%s eraser device",__PRETTY_FUNCTION__);
+  	}
+  	if ([theEvent isEnteringProximity] && [theEvent pointingDeviceType] == NSPenPointingDevice) {
+  		NSLog(@"%s pen device",__PRETTY_FUNCTION__);
+  	}
+    }
+#endif
+    if (delegate && [delegate respondsToSelector:@selector(imageDisplayViewtabletProximity:inView:)]) {
+		[delegate imageDisplayViewtabletProximity:tabletEvent inView:self];
+	}
     [super tabletProximity:tabletEvent];
 }
 

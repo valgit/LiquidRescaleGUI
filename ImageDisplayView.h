@@ -43,6 +43,7 @@
 - (void) imageDisplayViewMouseMoved: (NSEvent*)event inView:(NSView*)view;
 - (void) imageDisplayViewMouseUp:(NSEvent *)event inView:(NSView*)view;
 - (void) imageDisplayViewMouseDragged:(NSEvent*)event inView:(NSView*)view;
+- (void) imageDisplayViewtabletProximity:(NSEvent*)event inView:(NSView*)view;
 
 @end
 

@@ -111,6 +111,8 @@
 
 	NSPoint mLastPoint;
         float mLeftOverDistance;
+
+	float _brushPressure;
 }
 
 - (IBAction) cancel: (id)sender;
@@ -129,6 +131,9 @@
 - (IBAction) takeHeight: (id)sender;
 
 - (IBAction) revealInFinder:(id)sender;
+
+- (float)brushPressure;
+- (void)setBrushPressure:(float)newpressure;
 
 - (IBAction) LiquidRescale: (id)sender;
 - (IBAction) setBrushMask: (id)sender;

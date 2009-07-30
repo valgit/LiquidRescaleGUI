@@ -932,6 +932,17 @@ NSBitmapImageRep *mask_rep;
         }
 }
 
+- (float)brushPressure;
+{
+	return _brushPressure;
+}
+
+- (void)setBrushPressure:(float)newpressure;
+{
+	_brushPressure = newpressure;
+}
+
+
 - (void) openPresetsDidEnd:(NSOpenPanel *)panel
              returnCode:(int)returnCode
             contextInfo:(void  *)contextInfo
@@ -1713,8 +1724,10 @@ NSBitmapImageRep *mask_rep;
 	MLogString(1 ,@"");
 	if (_imageMask != nil ) {
 		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:view];
-		
+		double pressure = [event pressure];	
 		//NSLog(@"%s loc sel : %f %f",__PRETTY_FUNCTION__,loc.x,loc.y);
+		NSLog(@"%s pressure %f",__PRETTY_FUNCTION__,pressure);
+		[self setBrushPressure:pressure];
 		NSPoint anchor = [_panelImageView anchor];
 		//NSLog(@"%s anchor sel : %f %f",__PRETTY_FUNCTION__,anchor.x,anchor.y);
 		loc.x += anchor.x;
@@ -1726,7 +1739,8 @@ NSBitmapImageRep *mask_rep;
 		[NSGraphicsContext saveGraphicsState];
 		//[NSGraphicsContext setCurrentContext:[NSGraphicsContext
         //                graphicsContextWithBitmapImageRep:mask_rep]];
-		
+	
+		NSLog(@"%s mask color : %@",__PRETTY_FUNCTION__,[_imageMask backgroundColor]);	
 		switch ([mMaskToolButton selectedSegment]) {
 			case 0 : // retain
 				[_retainColor set];
@@ -1735,7 +1749,8 @@ NSBitmapImageRep *mask_rep;
 				[_removalColor set];
 				break;
 			case 3 : // clear
-				[_clearColor set];
+				//[_clearColor set];
+				[[_imageMask backgroundColor] set];
 				break;
 		}
 		
@@ -1777,7 +1792,8 @@ NSBitmapImageRep *mask_rep;
 				[_removalColor set];
 				break;
 			case 3 : // clear
-				[_clearColor set];
+				//[_clearColor set];
+				[[_imageMask backgroundColor] set];
 				break;
 		}
 		
@@ -1815,7 +1831,8 @@ NSBitmapImageRep *mask_rep;
 				[_removalColor set];
 				break;
 			case 3 : // clear
-				[_clearColor set];
+				//[_clearColor set];
+				[[_imageMask backgroundColor] set];
 				break;
 		}
 		
