@@ -663,7 +663,7 @@ NSBitmapImageRep *mask_rep;
 	  lqr_carver_set_enl_step(carver, enl_step);
 
 	  // Choose the resize order
-	  if ([mResizeOrderCombo indexOfSelectedItem] == 0)
+	  if ([mResizeOrderCombo indexOfSelectedItem] == 1)
             lqr_carver_set_resize_order(carver, LQR_RES_ORDER_HOR);
           else
             lqr_carver_set_resize_order(carver, LQR_RES_ORDER_VERT);
@@ -711,8 +711,8 @@ NSBitmapImageRep *mask_rep;
 	[mPercentSlider setFloatValue:100.0]; // (0 <= percent <= 100 ).  Default: 100.0
 	[self takePercent:mPercentSlider];
 
-	//TODO: [mEnergyCombo selectItemAtIndex:0];
-	[mResizeOrderCombo selectItemAtIndex:0];
+	[mEnergyCombo selectItemAtIndex:0];
+	[mResizeOrderCombo selectItemAtIndex:1];
 
 	[mBrushSizeSlider setFloatValue:10.0];
 	[mBrushWeightSlider setFloatValue:1.0];

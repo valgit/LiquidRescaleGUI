@@ -197,48 +197,7 @@
 	<key>Notifications</key>
 	<array/>
 	<key>OpenEditors</key>
-	<array>
-		<dict>
-			<key>Content</key>
-			<dict>
-				<key>PBXProjectModuleGUID</key>
-				<string>1A4EABFC1020D1240079BA9B</string>
-				<key>PBXProjectModuleLabel</key>
-				<string>LiquidRescaleController.m</string>
-				<key>PBXSplitModuleInNavigatorKey</key>
-				<dict>
-					<key>Split0</key>
-					<dict>
-						<key>PBXProjectModuleGUID</key>
-						<string>1A4EABFD1020D1240079BA9B</string>
-						<key>PBXProjectModuleLabel</key>
-						<string>LiquidRescaleController.m</string>
-						<key>_historyCapacity</key>
-						<integer>0</integer>
-						<key>bookmark</key>
-						<string>1A4C3A8710216FD100AC849F</string>
-						<key>history</key>
-						<array>
-							<string>1A4C3A7A10216E8E00AC849F</string>
-						</array>
-					</dict>
-					<key>SplitCount</key>
-					<string>1</string>
-				</dict>
-				<key>StatusBarVisibility</key>
-				<true/>
-			</dict>
-			<key>Geometry</key>
-			<dict>
-				<key>Frame</key>
-				<string>{{0, 20}, {1057, 649}}</string>
-				<key>PBXModuleWindowStatusBarHidden2</key>
-				<false/>
-				<key>RubberWindowFrame</key>
-				<string>236 123 1057 690 0 0 1440 878 </string>
-			</dict>
-		</dict>
-	</array>
+	<array/>
 	<key>PerspectiveWidths</key>
 	<array>
 		<integer>-1</integer>
@@ -269,8 +228,6 @@
 			<key>Layout</key>
 			<array>
 				<dict>
-					<key>BecomeActive</key>
-					<true/>
 					<key>ContentConfiguration</key>
 					<dict>
 						<key>PBXBottomSmartGroupGIDs</key>
@@ -350,6 +307,8 @@
 					<key>Dock</key>
 					<array>
 						<dict>
+							<key>BecomeActive</key>
+							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
@@ -367,7 +326,7 @@
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>1A4C3A8610216FD100AC849F</string>
+										<string>1AAC133A10217251002EDBA8</string>
 										<key>history</key>
 										<array>
 											<string>1AE5FB391016630800E4D78C</string>
@@ -381,7 +340,7 @@
 											<string>1A4FE20A101E1E77007B9EF1</string>
 											<string>1A1593F9101EBFD200683FCF</string>
 											<string>1A383AAE10202115007338EA</string>
-											<string>1A4EAC1F1020D56C0079BA9B</string>
+											<string>1A4C3A8610216FD100AC849F</string>
 										</array>
 										<key>prevStack</key>
 										<array>
@@ -454,9 +413,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>1A4C3A7810216E8E00AC849F</string>
+				<string>1AAC132B102171D2002EDBA8</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>1A4C3A7910216E8E00AC849F</string>
+				<string>1AAC132C102171D2002EDBA8</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -594,7 +553,6 @@
 		<string>1A1877281015D3A0002EC52F</string>
 		<string>1CD10A99069EF8BA00B06720</string>
 		<string>/Users/valery/Documents/Cocoa/LiquidRescaleGUI/LiquidRescaleGUI.xcodeproj</string>
-		<string>1A4EABFC1020D1240079BA9B</string>
 	</array>
 	<key>WindowString</key>
 	<string>151 191 1066 649 0 0 1440 878 </string>
@@ -674,7 +632,7 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>1A1877281015D3A0002EC52F</string>
-				<string>1A4C3A7C10216E8E00AC849F</string>
+				<string>1AAC133710217222002EDBA8</string>
 				<string>1CD0528F0623707200166675</string>
 				<string>XCMainBuildResultsModuleGUID</string>
 			</array>
@@ -794,13 +752,13 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>1CD10A99069EF8BA00B06720</string>
-				<string>1A4C3A7D10216E8E00AC849F</string>
+				<string>1AAC132E102171D2002EDBA8</string>
 				<string>1C162984064C10D400B95A72</string>
-				<string>1A4C3A7E10216E8E00AC849F</string>
-				<string>1A4C3A7F10216E8E00AC849F</string>
-				<string>1A4C3A8010216E8E00AC849F</string>
-				<string>1A4C3A8110216E8E00AC849F</string>
-				<string>1A4C3A8210216E8E00AC849F</string>
+				<string>1AAC132F102171D2002EDBA8</string>
+				<string>1AAC1330102171D2002EDBA8</string>
+				<string>1AAC1331102171D2002EDBA8</string>
+				<string>1AAC1332102171D2002EDBA8</string>
+				<string>1AAC1333102171D2002EDBA8</string>
 			</array>
 			<key>ToolbarConfiguration</key>
 			<string>xcode.toolbar.config.debugV3</string>
@@ -962,7 +920,7 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>1C78EAAD065D492600B07095</string>
-				<string>1A4C3A8310216E8E00AC849F</string>
+				<string>1AAC133810217222002EDBA8</string>
 				<string>1C78EAAC065D492600B07095</string>
 			</array>
 			<key>ToolbarConfiguration</key>
