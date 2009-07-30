@@ -287,7 +287,7 @@
 
 - (void)tabletProximity:(NSEvent *)tabletEvent
 {
-    NSLog(@"%s capa: %d",__PRETTY_FUNCTION__,[tabletEvent capabilityMask]);
+    NSLog(@"%s capa: %x",__PRETTY_FUNCTION__,[tabletEvent capabilityMask]);
     if ([tabletEvent capabilityMask] & 0x0200)
 	NSLog(@"%s capa: has absoluteZ",__PRETTY_FUNCTION__);
     if ([tabletEvent capabilityMask] & 0x0800)
@@ -295,10 +295,10 @@
 	//[theEvent isEnteringProximity]
 #ifndef GNUSTEP
     if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_3) {
-  	if ([theEvent isEnteringProximity] && [theEvent pointingDeviceType] == NSEraserPointingDevice) {
+  	if ([tabletEvent isEnteringProximity] && [tabletEvent pointingDeviceType] == NSEraserPointingDevice) {
   		NSLog(@"%s eraser device",__PRETTY_FUNCTION__);
   	}
-  	if ([theEvent isEnteringProximity] && [theEvent pointingDeviceType] == NSPenPointingDevice) {
+  	if ([tabletEvent isEnteringProximity] && [tabletEvent pointingDeviceType] == NSPenPointingDevice) {
   		NSLog(@"%s pen device",__PRETTY_FUNCTION__);
   	}
     }

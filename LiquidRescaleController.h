@@ -129,6 +129,8 @@
 - (IBAction) takePercent: (id)sender;
 - (IBAction) takeWidth: (id)sender;
 - (IBAction) takeHeight: (id)sender;
+- (IBAction) takeWeight: (id)sender;
+- (IBAction) takeSize: (id)sender;
 
 - (IBAction) revealInFinder:(id)sender;
 

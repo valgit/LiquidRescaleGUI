@@ -932,6 +932,9 @@ NSBitmapImageRep *mask_rep;
         }
 }
 
+#pragma mark -
+#pragma mark brush parameters
+
 - (float)brushPressure;
 {
 	return _brushPressure;
@@ -942,6 +945,20 @@ NSBitmapImageRep *mask_rep;
 	_brushPressure = newpressure;
 }
 
+- (IBAction) takeWeight: (id)sender;
+{
+	MLogString(1 ,@"");
+	[self setBrushPressure:[sender doubleValue]];
+}
+
+- (IBAction) takeSize: (id)sender;
+{
+	MLogString(1 ,@"");
+}
+
+
+#pragma mark -
+#pragma mark presets
 
 - (void) openPresetsDidEnd:(NSOpenPanel *)panel
              returnCode:(int)returnCode
@@ -1636,8 +1653,9 @@ NSBitmapImageRep *mask_rep;
 
 - (void) brushShapeCenterAt:(NSPoint)pt
 {
+	// need some config ?
 	double mRadius = [mBrushSizeSlider doubleValue];
-	double mWeight = [mBrushWeightSlider doubleValue];
+	double mWeight = [self brushPressure]; //[mBrushWeightSlider doubleValue];
 	MLogString(1 ,@"radius : %f w: %f",mRadius, mWeight);
 	// Create the shape of the tip of the brush. Code currently assumes the bounding
 	//      box of the shape is square (height == width)
