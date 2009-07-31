@@ -1824,6 +1824,7 @@ NSBitmapImageRep *mask_rep;
 		
 		mLastPoint = loc;
 		// very inefficient
+		[self imagePanelViewSelectionDidChange:_panelImageView];
 		[view setNeedsDisplay:YES];
 	}
 }
