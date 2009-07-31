@@ -73,6 +73,7 @@ void libintl_dgettext()
 - (void) progress_end:(NSString*)message;
 
 - (void) buildSkinToneBias;
+- (void) buildWeightMask;
 
 @end
 
@@ -674,6 +675,7 @@ NSBitmapImageRep *mask_rep;
 	  // TODO: bias and co here ...
 	  if([mAddWeightMaskButton state]==NSOnState) {
 		MLogString(1 ,@"creating mask");
+		[self buildWeightMask];
 	  }
 
 	  if([mPreserveSkinTonesButton state]==NSOnState) {
@@ -1783,7 +1785,8 @@ NSBitmapImageRep *mask_rep;
 		//NSLog(@"%s mask color : %@",__PRETTY_FUNCTION__,[_imageMask backgroundColor]);	
 		switch ([mMaskToolButton selectedSegment]) {
 			case 0 : // retain
-				[_retainColor set];
+				//[_retainColor set];
+				[[_retainColor colorWithAlphaComponent:[self brushPressure]] set];
 				break;
 			case 1 : // removal
 				[_removalColor set];
@@ -1836,7 +1839,8 @@ NSBitmapImageRep *mask_rep;
 		
 		switch ([mMaskToolButton selectedSegment]) {
 			case 0 : // retain
-				[_retainColor set];
+				//[_retainColor set];
+				[[_retainColor colorWithAlphaComponent:[self brushPressure]] set];
 				break;
 			case 1 : // removal
 				[_removalColor set];
@@ -1851,8 +1855,6 @@ NSBitmapImageRep *mask_rep;
 		
 		//[self brushShapeCenterAt:loc];	
 		//mLeftOverDistance = [self stampBrushfrom:mLastPoint to:loc leftOverDistance:mLeftOverDistance];
-		//[NSBezierPath setDefaultLineWidth:[mBrushSizeSlider doubleValue]];
-		//[NSBezierPath strokeLineFromPoint:mLastPoint toPoint:loc];
 		[path stroke];
 		
 		//[_imageMask recache];
@@ -1882,7 +1884,8 @@ NSBitmapImageRep *mask_rep;
 		
 		switch ([mMaskToolButton selectedSegment]) {
 			case 0 : // retain
-				[_retainColor set];
+				//[_retainColor set];
+				[[_retainColor colorWithAlphaComponent:[self brushPressure]] set];
 				break;
 			case 1 : // removal
 				[_removalColor set];
@@ -2321,4 +2324,56 @@ NSBitmapImageRep *mask_rep;
              }
         }
 }
+
+- (void) buildWeightMask;
+{
+        MLogString(1 ,@"");
+        int             Bpr;
+        // int             spp;
+        int             w;
+        int             h;
+        const unsigned char  *pixels;
+	
+	if (_imageMask != NULL) {
+//#ifndef GNUSTEP
+#if 0
+        CGImageRef cgiref = CGImageSourceCreateImageAtIndex(source, 0, NULL);
+        w = CGImageGetWidth( cgiref );
+        h = CGImageGetHeight( cgiref );
+        Bpr = CGImageGetBytesPerRow(cgiref);
+
+        CFDataRef imageData = CGDataProviderCopyData( CGImageGetDataProvider( cgiref ));
+        pixels = (const unsigned char  *)CFDataGetBytePtr(imageData);
+#else
+        NSBitmapImageRep *rep = [NSBitmapImageRep imageRepWithData:[_imageMask TIFFRepresentation]];
+        Bpr =[rep bytesPerRow];
+        //spp =[rep samplesPerPixel];
+        w =[rep pixelsWide];
+        h =[rep pixelsHigh];
+        pixels =[rep bitmapData];
+#endif
+        int x,y;
+
+        for (y=0; y<h; y++) {
+            unsigned char *p = (unsigned char *)(pixels + Bpr*y);
+            for (x=0; x<w; x++/*,p+=spp*/) {
+                  // TODO: maybe we should use the alpha plane here ...
+                  gdouble bias = 0.0;
+		  if (p[3*x+1] == 255)
+			bias= 1000000.0;
+		  if (p[3*x] == 255)
+			bias=-1000000.0;
+
+                  lqr_carver_bias_add_xy(carver,bias,x,y);
+             }
+        }
+
+	} else {
+              NSRunCriticalAlertPanel ([[NSProcessInfo processInfo] processName],
+			NSLocalizedString(@"Weighted Mask Required but Not Defined",@""), 
+			LS_OK, NULL, NULL);
+	}
+}
+
+
 @end
