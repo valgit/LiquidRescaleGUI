@@ -2329,7 +2329,7 @@ NSBitmapImageRep *mask_rep;
 {
         MLogString(1 ,@"");
         int             Bpr;
-        // int             spp;
+        int             spp;
         int             w;
         int             h;
         const unsigned char  *pixels;
@@ -2347,7 +2347,14 @@ NSBitmapImageRep *mask_rep;
 #else
         NSBitmapImageRep *rep = [NSBitmapImageRep imageRepWithData:[_imageMask TIFFRepresentation]];
         Bpr =[rep bytesPerRow];
-        //spp =[rep samplesPerPixel];
+        spp =[rep samplesPerPixel];
+	if (spp != 4) {
+                NSRunCriticalAlertPanel ([[NSProcessInfo processInfo] processName],
+			NSLocalizedString(@"Weighted Mask Has No Alpha Defined",@""), 
+			LS_OK, NULL, NULL);
+		MLogString(1 ,@"got spp: %d", spp);
+		return ;
+	}
         w =[rep pixelsWide];
         h =[rep pixelsHigh];
         pixels =[rep bitmapData];
@@ -2360,9 +2367,9 @@ NSBitmapImageRep *mask_rep;
                   // TODO: maybe we should use the alpha plane here ...
                   gdouble bias = 0.0;
 		  if (p[3*x+1] == 255)
-			bias= 1000000.0;
+			bias= 1000000.0 * p[3*x+3];
 		  if (p[3*x] == 255)
-			bias=-1000000.0;
+			bias=-1000000.0 * p[3*x+3];
 
                   lqr_carver_bias_add_xy(carver,bias,x,y);
              }
