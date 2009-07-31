@@ -181,7 +181,7 @@
 			imageSize.width,imageSize.height);
 		[_maskImage drawInRect:destRect
                                 fromRect:NSMakeRect(0,0, imageSize.width,imageSize.height)
-                                operation:NSCompositeSourceOver
+                                operation:NSCompositeSourceAtop//NSCompositeSourceOver
                                 fraction:1.0];
 	}
 #endif

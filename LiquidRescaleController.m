@@ -488,7 +488,9 @@ NSBitmapImageRep *mask_rep;
 	MLogString(1 ,@"");
 	[ NSApp stopModal ];
 	cancelscaling = NO;
+	if (carver != NULL) {
 	lqr_carver_cancel(carver);
+	}
 }
 
 - (void) startRescaling;
@@ -1186,15 +1188,18 @@ NSBitmapImageRep *mask_rep;
 				NSNumber *focalLengthObj = [exif objectForKey:(NSString *)kCGImagePropertyExifFocalLength];
 				if (focalLengthObj) {
 					focalLengthStr = [NSString stringWithFormat:@"%@mm", [focalLengthObj stringValue]];
-				}
+				} else
+					focalLengthStr = @"";
 				NSNumber *fNumberObj = [exif objectForKey:(NSString *)kCGImagePropertyExifFNumber];
 				if (fNumberObj) {
 					fNumberStr = [NSString stringWithFormat:@"F%@", [fNumberObj stringValue]];
-				}
+				} else
+					fNumberStr = @"";
 				NSNumber *exposureTimeObj = (NSNumber *)[exif objectForKey:(NSString *)kCGImagePropertyExifExposureTime];
 				if (exposureTimeObj) {
 					exposureTimeStr = [NSString stringWithFormat:@"1/%.0f", (1/[exposureTimeObj floatValue])];
-				}
+				} else
+					exposureTimeStr = @"";
 				NSNumber *exposureBiasObj = (NSNumber *)[exif objectForKey:@"ExposureBiasValue"];
 				if (exposureBiasObj) {
 					exposureBiasStr = [NSString stringWithFormat:@"Exposure Comp. : %+0.1f EV", [exposureBiasObj floatValue]];
@@ -1501,12 +1506,20 @@ NSBitmapImageRep *mask_rep;
 - (IBAction) resetMask: (id)sender;
 {
 	MLogString(1 ,@"");
-	
-	//MLogString(1 ,@"im : (%@)",[_imageMask representations]);
-	if (_imageMask != NULL) 
-		[_imageMask release];
-	
 	NSSize imSize = [_image size];
+	//MLogString(1 ,@"im : (%@)",[_imageMask representations]);
+	// some tuning : reuse existing image ...
+	if (_imageMask != NULL)  {
+		//[_imageMask release];
+		//[NSGraphicsContext saveGraphicsState];
+		[_imageMask lockFocus];
+		[[NSColor clearColor] set];
+        //[NSBezierPath fillRect: NSMakeRect(0,0,imSize.width,imSize.height)];
+		NSRectFill(NSMakeRect(0,0,imSize.width,imSize.height));
+		[_imageMask unlockFocus];
+		//[NSGraphicsContext restoreGraphicsState];
+	} else {
+	
 	//MLogString(1 ,@"size is : (%f,%f)",imSize.width,imSize.height);
 	_imageMask = [[ NSImage alloc ] initWithSize:imSize];
 	//MLogString(1 ,@"im : (%@)",[_imageMask representations]);
@@ -1528,6 +1541,8 @@ NSBitmapImageRep *mask_rep;
 	mask_rep = destImageRep;
 	//MLogString(1 ,@"im : (%@)",[_imageMask representations]);
 	[_imageView setMaskImage:_imageMask];
+	}
+	// need some redraw here !
 }
 
 #pragma mark -
@@ -1752,6 +1767,13 @@ NSBitmapImageRep *mask_rep;
 		loc.y += anchor.y;
 		//NSLog(@"%s loc sel after : %f %f",__PRETTY_FUNCTION__,loc.x,loc.y);
 		
+		// very inefficient ?
+		NSBezierPath* path = [[NSBezierPath alloc] init];
+		[path setLineWidth:[mBrushSizeSlider doubleValue]];
+		[path setLineCapStyle:NSRoundLineCapStyle];
+		[path moveToPoint:loc];
+		[path lineToPoint:loc];
+		
 		[_imageMask lockFocus];
 		//[_imageMask lockFocusOnRepresentation:mask_rep];
 		[NSGraphicsContext saveGraphicsState];
@@ -1766,17 +1788,20 @@ NSBitmapImageRep *mask_rep;
 			case 1 : // removal
 				[_removalColor set];
 				break;
-			case 3 : // clear
+			case 2 : // clear
 				//[_clearColor set];
 				[[_imageMask backgroundColor] set];
 				break;
 		}
 		
-		[self brushShapeCenterAt:loc];	
+		// TODO: draw point
+		//[self brushShapeCenterAt:loc];	
+		[path stroke];
 		
 		//[_imageMask recache];
 		[NSGraphicsContext restoreGraphicsState];
 		[_imageMask unlockFocus];
+		[path release];
 		
 		mLastPoint = loc;
 		mLeftOverDistance = 0.0;
@@ -1797,8 +1822,15 @@ NSBitmapImageRep *mask_rep;
 		loc.x += anchor.x;
 		loc.y += anchor.y;
 		
-		[_imageMask lockFocus];
+		// very inefficient ?
+		NSBezierPath* path = [[NSBezierPath alloc] init];
+		[path setLineWidth:[mBrushSizeSlider doubleValue]];
+		[path setLineCapStyle:NSRoundLineCapStyle];
+		[path moveToPoint:mLastPoint];
+		[path lineToPoint:loc];
+		
 		[NSGraphicsContext saveGraphicsState];
+		[_imageMask lockFocus];
 		//[NSGraphicsContext setCurrentContext:[NSGraphicsContext
 		//              graphicsContextWithBitmapImageRep:mask_rep]];
 		
@@ -1809,19 +1841,25 @@ NSBitmapImageRep *mask_rep;
 			case 1 : // removal
 				[_removalColor set];
 				break;
-			case 3 : // clear
+			case 2 : // clear
 				//[_clearColor set];
-				[[_imageMask backgroundColor] set];
+				//[[_imageMask backgroundColor] set];
+				[[NSColor clearColor] set];
+				//[[[NSColor whiteColor] colorWithAlphaComponent:0.0] set];
 				break;
 		}
 		
 		//[self brushShapeCenterAt:loc];	
-		mLeftOverDistance = [self stampBrushfrom:mLastPoint to:loc leftOverDistance:mLeftOverDistance];
+		//mLeftOverDistance = [self stampBrushfrom:mLastPoint to:loc leftOverDistance:mLeftOverDistance];
+		//[NSBezierPath setDefaultLineWidth:[mBrushSizeSlider doubleValue]];
+		//[NSBezierPath strokeLineFromPoint:mLastPoint toPoint:loc];
+		[path stroke];
 		
 		//[_imageMask recache];
-		[NSGraphicsContext restoreGraphicsState];
 		[_imageMask unlockFocus];
-		
+		[NSGraphicsContext restoreGraphicsState];
+				
+		[path release];
 		mLastPoint = loc;
 		// very inefficient
 		[self imagePanelViewSelectionDidChange:_panelImageView];
@@ -1849,17 +1887,17 @@ NSBitmapImageRep *mask_rep;
 			case 1 : // removal
 				[_removalColor set];
 				break;
-			case 3 : // clear
+			case 2 : // clear
 				//[_clearColor set];
 				[[_imageMask backgroundColor] set];
 				break;
 		}
 		
 		// Stamp the brush in a line, from the last mouse location to the current one
-		mLeftOverDistance = [self stampBrushfrom:mLastPoint to:loc leftOverDistance:mLeftOverDistance];
+		//mLeftOverDistance = [self stampBrushfrom:mLastPoint to:loc leftOverDistance:mLeftOverDistance];
 		
 		[_imageMask unlockFocus];
-		[_imageMask recache];
+		//[_imageMask recache];
 		[NSGraphicsContext restoreGraphicsState];
 		
 		mLastPoint = NSZeroPoint;
