@@ -1656,7 +1656,7 @@ NSBitmapImageRep *mask_rep;
 	// need some config ?
 	double mRadius = [mBrushSizeSlider doubleValue];
 	double mWeight = [self brushPressure]; //[mBrushWeightSlider doubleValue];
-	MLogString(1 ,@"radius : %f w: %f",mRadius, mWeight);
+	//MLogString(1 ,@"radius : %f w: %f",mRadius, mWeight);
 	// Create the shape of the tip of the brush. Code currently assumes the bounding
 	//      box of the shape is square (height == width)
 	NSRect mainOval = { { pt.x, pt.y } , { 2 * mRadius, 2 * mRadius } };
@@ -1739,12 +1739,12 @@ NSBitmapImageRep *mask_rep;
 
 - (void) imageDisplayViewMouseDown:(NSEvent*)event inView:(NSView*)view;
 {
-	MLogString(1 ,@"");
+	//MLogString(1 ,@"");
 	if (_imageMask != nil ) {
 		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:view];
 		double pressure = [event pressure];	
 		//NSLog(@"%s loc sel : %f %f",__PRETTY_FUNCTION__,loc.x,loc.y);
-		NSLog(@"%s pressure %f",__PRETTY_FUNCTION__,pressure);
+		//NSLog(@"%s pressure %f",__PRETTY_FUNCTION__,pressure);
 		[self setBrushPressure:pressure];
 		NSPoint anchor = [_panelImageView anchor];
 		//NSLog(@"%s anchor sel : %f %f",__PRETTY_FUNCTION__,anchor.x,anchor.y);
@@ -1788,7 +1788,7 @@ NSBitmapImageRep *mask_rep;
 
 - (void) imageDisplayViewMouseDragged:(NSEvent*)event inView:(NSView*)view;
 {
-	MLogString(1 ,@"");
+	//MLogString(1 ,@"");
 	if (_imageMask !=  NULL) {
 		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:view];
 		
@@ -1831,7 +1831,7 @@ NSBitmapImageRep *mask_rep;
 
 - (void) imageDisplayViewMouseUp:(NSEvent*)event inView:(NSView*)view;
 {
-	MLogString(1 ,@"");
+	//MLogString(1 ,@"");
 	if (_imageMask !=  NULL) {
 		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:view];
 		NSPoint anchor = [_panelImageView anchor];

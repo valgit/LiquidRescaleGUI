@@ -211,6 +211,7 @@
 
 - (void)mouseDown:(NSEvent*)event
 {
+#if 0
 	NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
 	double pressure = [event pressure];
 	if(([event type] == NSTabletPoint) ||
@@ -225,6 +226,7 @@
 		if (mask & NSPenUpperSideMask)
 			NSLog(@"%s -> NSPenUpperSide",__PRETTY_FUNCTION__);
 	}
+#endif
 
 //        NSLog(@"%s -> (%f,%f) pres: %f",__PRETTY_FUNCTION__,loc.x,loc.y,pressure);
 	if (delegate && [delegate respondsToSelector:@selector(imageDisplayViewMouseDown:inView:)]) {
@@ -258,6 +260,7 @@
     newPoint.y -= mouseDownPoint.y;
     [self setFrameOrigin:newPoint];
 #endif
+#if 0
 	double pressure = [event pressure];
 	if(([event type] == NSTabletPoint) ||
 	   ([event subtype] == NSTabletPointEventSubtype)) {
@@ -277,6 +280,7 @@
 	double rotation = [event rotation];
 	NSLog(@"%s -> (%f,%f) pres: %f",__PRETTY_FUNCTION__,loc.x,loc.y,pressure);
 	NSLog(@"%s -> tilf (%f,%f) rot : %f",__PRETTY_FUNCTION__,tilt.x,tilt.y,rotation);
+#endif
 	if (delegate && [delegate respondsToSelector:@selector(imageDisplayViewMouseDragged:inView:)]) {
 		[delegate imageDisplayViewMouseDragged:event inView:self];
 	}
@@ -287,6 +291,7 @@
 
 - (void)tabletProximity:(NSEvent *)tabletEvent
 {
+#if 0
     NSLog(@"%s capa: %x",__PRETTY_FUNCTION__,[tabletEvent capabilityMask]);
     if ([tabletEvent capabilityMask] & 0x0200)
 	NSLog(@"%s capa: has absoluteZ",__PRETTY_FUNCTION__);
@@ -302,6 +307,7 @@
   		NSLog(@"%s pen device",__PRETTY_FUNCTION__);
   	}
     }
+#endif
 #endif
     if (delegate && [delegate respondsToSelector:@selector(imageDisplayViewtabletProximity:inView:)]) {
 		[delegate imageDisplayViewtabletProximity:tabletEvent inView:self];
