@@ -131,7 +131,7 @@
 	
     if (_image) {
 	NSSize thumbsize = [_image size];
-    NSLog(@"%s thumb (%f,%f)",__PRETTY_FUNCTION__,thumbsize.width,thumbsize.height);
+    //NSLog(@"%s thumb (%f,%f)",__PRETTY_FUNCTION__,thumbsize.width,thumbsize.height);
 #if 0
 	//[_image drawAtPoint:NSZeroPoint 
 	//	fromRect:NSMakeRect(0,0, thumbsize.width,thumbsize.height) 
@@ -153,10 +153,11 @@
         NSSize viewSize  = [self bounds].size;
         NSSize imageSize = [_image size];
 	double imageScale = viewSize.width/thumbsize.width;
+	NSLog(@"%s scale (%f,%f)",__PRETTY_FUNCTION__,imageScale);
         NSAffineTransform* at = [NSAffineTransform transform];
         //[at scaleBy:imageScale];
-        imageSize = [at transformSize:imageSize];
-	NSLog(@"%s thumb (%f,%f)",__PRETTY_FUNCTION__,imageSize.width,imageSize.height);
+        //needed ? imageSize = [at transformSize:imageSize];
+	//NSLog(@"%s thumb (%f,%f)",__PRETTY_FUNCTION__,imageSize.width,imageSize.height);
 
         NSPoint viewCenter;
         viewCenter.x = viewSize.width  * 0.50;
@@ -177,8 +178,8 @@
 
 	if (_maskImage) {
 		NSSize imageSize = [_maskImage size];
-		NSLog(@"%s image mask (%f,%f)",__PRETTY_FUNCTION__,
-			imageSize.width,imageSize.height);
+		//NSLog(@"%s image mask (%f,%f)",__PRETTY_FUNCTION__,
+			//imageSize.width,imageSize.height);
 		[_maskImage drawInRect:destRect
                                 fromRect:NSMakeRect(0,0, imageSize.width,imageSize.height)
                                 operation:NSCompositeSourceAtop//NSCompositeSourceOver

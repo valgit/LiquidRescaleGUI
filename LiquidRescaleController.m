@@ -1756,7 +1756,7 @@ NSBitmapImageRep *mask_rep;
 {
 	//MLogString(1 ,@"");
 	if (_imageMask != nil ) {
-		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:view];
+		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:nil];
 		double pressure = [event pressure];	
 		//NSLog(@"%s loc sel : %f %f",__PRETTY_FUNCTION__,loc.x,loc.y);
 		//NSLog(@"%s pressure %f",__PRETTY_FUNCTION__,pressure);
@@ -1780,7 +1780,7 @@ NSBitmapImageRep *mask_rep;
 		//[NSGraphicsContext setCurrentContext:[NSGraphicsContext
         //                graphicsContextWithBitmapImageRep:mask_rep]];
 	
-		NSLog(@"%s mask color : %@",__PRETTY_FUNCTION__,[_imageMask backgroundColor]);	
+		//NSLog(@"%s mask color : %@",__PRETTY_FUNCTION__,[_imageMask backgroundColor]);	
 		switch ([mMaskToolButton selectedSegment]) {
 			case 0 : // retain
 				[_retainColor set];
@@ -1815,7 +1815,7 @@ NSBitmapImageRep *mask_rep;
 {
 	//MLogString(1 ,@"");
 	if (_imageMask !=  NULL) {
-		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:view];
+		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:nil];
 		
 		NSPoint anchor = [_panelImageView anchor];
 		//NSLog(@"%s anchor sel : %f %f",__PRETTY_FUNCTION__,anchor.x,anchor.y);
@@ -1871,7 +1871,7 @@ NSBitmapImageRep *mask_rep;
 {
 	//MLogString(1 ,@"");
 	if (_imageMask !=  NULL) {
-		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:view];
+		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:nil];
 		NSPoint anchor = [_panelImageView anchor];
 		//NSLog(@"%s anchor sel : %f %f",__PRETTY_FUNCTION__,anchor.x,anchor.y);
 		loc.x += anchor.x;
