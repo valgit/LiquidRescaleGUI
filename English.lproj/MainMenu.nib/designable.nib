@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="544"/>
+			<integer value="485"/>
 			<integer value="296"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
@@ -1456,9 +1456,9 @@
 														<string key="NSContents"/>
 														<reference key="NSSupport" ref="22"/>
 														<reference key="NSControlView" ref="523730893"/>
-														<double key="NSMaxValue">1.000000e+02</double>
+														<double key="NSMaxValue">1.000000e+00</double>
 														<double key="NSMinValue">0.000000e+00</double>
-														<double key="NSValue">5.000000e+01</double>
+														<double key="NSValue">1.000000e+00</double>
 														<double key="NSAltIncValue">0.000000e+00</double>
 														<int key="NSNumberOfTickMarks">0</int>
 														<int key="NSTickMarkPosition">0</int>
@@ -1557,6 +1557,7 @@
 										</object>
 									</object>
 									<string key="NSFrame">{{1, 1}, {286, 393}}</string>
+									<string key="NSBounds">{{0, 206}, {286, 393}}</string>
 									<reference key="NSSuperview" ref="605979652"/>
 									<reference key="NSNextKeyView" ref="128774"/>
 									<reference key="NSDocView" ref="128774"/>
@@ -1571,7 +1572,7 @@
 									<bool key="NSEnabled">YES</bool>
 									<reference key="NSTarget" ref="605979652"/>
 									<string key="NSAction">_doScroller:</string>
-									<double key="NSCurValue">1.000000e+00</double>
+									<double key="NSCurValue">3.300001e-01</double>
 									<double key="NSPercent">5.614285e-01</double>
 								</object>
 								<object class="NSScroller" id="1021837969">

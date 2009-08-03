@@ -153,7 +153,7 @@
         NSSize viewSize  = [self bounds].size;
         NSSize imageSize = [_image size];
 	double imageScale = viewSize.width/thumbsize.width;
-	NSLog(@"%s scale (%f,%f)",__PRETTY_FUNCTION__,imageScale);
+	//NSLog(@"%s scale (%f,%f)",__PRETTY_FUNCTION__,imageScale);
         NSAffineTransform* at = [NSAffineTransform transform];
         //[at scaleBy:imageScale];
         //needed ? imageSize = [at transformSize:imageSize];

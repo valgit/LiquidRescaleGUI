@@ -195,8 +195,8 @@ NSBitmapImageRep *mask_rep;
 	//[self setTempPath:NSTemporaryDirectory()]; // TODO better
 	[self setTempPath:[self initTempDirectory]];
 	
-	NSString* imageName = [[NSBundle mainBundle]
-                    pathForResource:@"image_broken" ofType:@"png"];
+	//NSString* imageName = [[NSBundle mainBundle]
+      //              pathForResource:@"image_broken" ofType:@"png"];
 	//NSImage* _image = [[[NSImage alloc] initWithContentsOfFile:imageName] autorelease];
 	//_image = [[[NSImage alloc] initWithContentsOfFile:imageName] autorelease];
 	_image = NULL;
@@ -720,6 +720,8 @@ NSBitmapImageRep *mask_rep;
 
 	[mBrushSizeSlider setFloatValue:10.0];
 	[mBrushWeightSlider setFloatValue:1.0];
+	[self setBrushPressure:1.0];
+	
 	[self setupImageSize];
 }
 
@@ -743,11 +745,11 @@ NSBitmapImageRep *mask_rep;
 
     img = [NSImage imageNamed: @"image broken"];
     options = [NSDictionary dictionaryWithObjectsAndKeys:
-          @"0.1", @"Version",
+          @"0.2", @"Version",
           @"Liquid Rescale", @"ApplicationName",
           img, @"ApplicationIcon",
           @"Copyright 2009, Valery Brasseur", @"Copyright",
-          @"Liquid Rescale v0.1 prealpha", @"ApplicationVersion",
+          @"Liquid Rescale v0.2 prealpha", @"ApplicationVersion",
           nil];
 
     [[NSApplication sharedApplication] orderFrontStandardAboutPanelWithOptions:options];
@@ -1759,10 +1761,13 @@ NSBitmapImageRep *mask_rep;
 	//MLogString(1 ,@"");
 	if (_imageMask != nil ) {
 		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:nil];
-		double pressure = [event pressure];	
-		//NSLog(@"%s loc sel : %f %f",__PRETTY_FUNCTION__,loc.x,loc.y);
-		//NSLog(@"%s pressure %f",__PRETTY_FUNCTION__,pressure);
-		[self setBrushPressure:pressure];
+		if ([event type] == NSTabletPoint || [event subtype] == NSTabletPointEventSubtype) {
+			double pressure = [event pressure];	
+			//NSLog(@"%s loc sel : %f %f",__PRETTY_FUNCTION__,loc.x,loc.y);
+			//NSLog(@"%s pressure %f",__PRETTY_FUNCTION__,pressure);
+			[self setBrushPressure:pressure];
+		}
+		//NSLog(@"%s pressure %f",__PRETTY_FUNCTION__,[self brushPressure]);
 		NSPoint anchor = [_panelImageView anchor];
 		//NSLog(@"%s anchor sel : %f %f",__PRETTY_FUNCTION__,anchor.x,anchor.y);
 		loc.x += anchor.x;
@@ -1781,7 +1786,7 @@ NSBitmapImageRep *mask_rep;
 		[NSGraphicsContext saveGraphicsState];
 		//[NSGraphicsContext setCurrentContext:[NSGraphicsContext
         //                graphicsContextWithBitmapImageRep:mask_rep]];
-	
+		
 		//NSLog(@"%s mask color : %@",__PRETTY_FUNCTION__,[_imageMask backgroundColor]);	
 		switch ([mMaskToolButton selectedSegment]) {
 			case 0 : // retain
@@ -1819,7 +1824,10 @@ NSBitmapImageRep *mask_rep;
 	//MLogString(1 ,@"");
 	if (_imageMask !=  NULL) {
 		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:nil];
-		
+		if ([event type] == NSTabletPoint || [event subtype] == NSTabletPointEventSubtype) {
+			double pressure = [event pressure];	
+			[self setBrushPressure:pressure];
+		}
 		NSPoint anchor = [_panelImageView anchor];
 		//NSLog(@"%s anchor sel : %f %f",__PRETTY_FUNCTION__,anchor.x,anchor.y);
 		loc.x += anchor.x;
@@ -2056,72 +2064,72 @@ NSBitmapImageRep *mask_rep;
 // write back the defaults ...
 -(void)setDefaults;
 {
-        NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
-
-        if (standardUserDefaults) {
+	NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
+	
+	if (standardUserDefaults) {
 #if 0			
-              [standardUserDefaults setObject:[mOuputFile stringValue] forKey:@"outputDirectory"];
-              [standardUserDefaults setObject:[mOutFile stringValue] forKey:@"outputFile"];
-              [standardUserDefaults setObject:[mAppendTo stringValue] forKey:@"outputAppendTo"];
-              [standardUserDefaults setObject:[mOutQuality stringValue] forKey:@"outputQuality"];
+		[standardUserDefaults setObject:[mOuputFile stringValue] forKey:@"outputDirectory"];
+		[standardUserDefaults setObject:[mOutFile stringValue] forKey:@"outputFile"];
+		[standardUserDefaults setObject:[mAppendTo stringValue] forKey:@"outputAppendTo"];
+		[standardUserDefaults setObject:[mOutQuality stringValue] forKey:@"outputQuality"];
 #endif	
-	  id obj = [useroptions valueForKey:@"importInAperture"];
-	  if (obj != nil)
-	  [standardUserDefaults setObject:obj
-					forKey:@"importInAperture"];
-
-	  obj = [useroptions valueForKey:@"stackWithOriginal"];
-	  if (obj != nil)
-	  [standardUserDefaults setObject:obj
-					 forKey:@"stackWithOriginal"];
-
-	  obj = [useroptions valueForKey:@"addKeyword"];
-	  if (obj != nil) {
-		  [standardUserDefaults setObject:obj
-					 forKey:@"addKeyword"];
-		  if ([obj boolValue])
-			[standardUserDefaults setObject:[useroptions valueForKey:@"keyword"]
-					 forKey:@"keyword"];
-			 
-	   } 
-              [standardUserDefaults synchronize];
-        }
+		id obj = [useroptions valueForKey:@"importInAperture"];
+		if (obj != nil)
+			[standardUserDefaults setObject:obj
+									 forKey:@"importInAperture"];
+		
+		obj = [useroptions valueForKey:@"stackWithOriginal"];
+		if (obj != nil)
+			[standardUserDefaults setObject:obj
+									 forKey:@"stackWithOriginal"];
+		
+		obj = [useroptions valueForKey:@"addKeyword"];
+		if (obj != nil) {
+			[standardUserDefaults setObject:obj
+									 forKey:@"addKeyword"];
+			if ([obj boolValue])
+				[standardUserDefaults setObject:[useroptions valueForKey:@"keyword"]
+										 forKey:@"keyword"];
+			
+		} 
+		[standardUserDefaults synchronize];
+	}
 }
 
 // read back the defaults ...
 -(void)getDefaults;
 {
-        NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
-
-        if (standardUserDefaults) {
-			  NSString *temp;
-			  
-			  temp = [standardUserDefaults objectForKey:@"outputDirectory"];
-			  if (temp != nil)
-				[mOuputFile setStringValue:temp];
-			  
-			  temp = [standardUserDefaults objectForKey:@"outputFile"];
-			  if (temp != nil)
-				[mOutFile setStringValue:temp];
-			  
-			  temp = [standardUserDefaults objectForKey:@"outputAppendTo"];
-			  if (temp != nil)
-				[mAppendTo setStringValue:temp];
-				
-			  temp = [standardUserDefaults objectForKey:@"outputQuality"];
-			  if (temp != nil)
-				[mOutQuality setStringValue:temp];
-				
-			[useroptions setValue:[standardUserDefaults objectForKey:@"importInAperture"]
-				forKey:@"importInAperture"];
-			[useroptions setValue:[standardUserDefaults objectForKey:@"stackWithOriginal"]
-				forKey:@"stackWithOriginal"];
-			[useroptions setValue:[standardUserDefaults objectForKey:@"addKeyword"]
-				forKey:@"addKeyword"];
-			if ([[useroptions valueForKey:@"addKeyword"] boolValue])
-				[useroptions setValue:[standardUserDefaults objectForKey:@"keyword"]
-					forKey:@"keyword"];
-        }
+	NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
+	
+	if (standardUserDefaults) {
+		NSString *temp;
+		
+		temp = [standardUserDefaults objectForKey:@"outputDirectory"];
+		if (temp != nil)
+			[mOuputFile setStringValue:temp];
+		
+		temp = [standardUserDefaults objectForKey:@"outputFile"];
+		if (temp != nil)
+			[mOutFile setStringValue:temp];
+		
+		temp = [standardUserDefaults objectForKey:@"outputAppendTo"];
+		if (temp != nil)
+			[mAppendTo setStringValue:temp];
+		
+		temp = [standardUserDefaults objectForKey:@"outputQuality"];
+		if (temp != nil)
+			[mOutQuality setStringValue:temp];
+		
+		[useroptions setValue:[standardUserDefaults objectForKey:@"importInAperture"]
+					   forKey:@"importInAperture"];
+		[useroptions setValue:[standardUserDefaults objectForKey:@"stackWithOriginal"]
+					   forKey:@"stackWithOriginal"];
+		[useroptions setValue:[standardUserDefaults objectForKey:@"addKeyword"]
+					   forKey:@"addKeyword"];
+		if ([[useroptions valueForKey:@"addKeyword"] boolValue])
+			[useroptions setValue:[standardUserDefaults objectForKey:@"keyword"]
+						   forKey:@"keyword"];
+	}
 }
 
 -(NSString *)initTempDirectory;
