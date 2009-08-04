@@ -4,6 +4,7 @@ APP_NAME = LiquidRescaleGUI
 LiquidRescaleGUI_OBJC_FILES = LiquidRescaleController.m  main.m   \
 NSImage-ProportionalScaling.m NSFileManager-Extensions.m  \
 MLog.m ImageDisplayView.m ImagePanelView.m NSImage+Cropped.m \
+DKActionButtonCell.m  DKActionButton.m\
 PasteBoardHandling.m CTProgressBadge.m
 
 LiquidRescaleGUI_MAIN_MODEL_FILE = MainMenu.nib
@@ -24,6 +25,7 @@ toolDelete.tif\
 toolErase.tif\
 Remove.tiff\
 image_broken.png\
+ActionsPD.tiff\
 Add.tiff
 
 LiquidRescaleGUI_APPLICATION_ICON = GREYCstoration.png

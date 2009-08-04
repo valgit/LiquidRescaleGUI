@@ -575,26 +575,34 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	int bps = 8; // bit per sample ( 8 /16 ), get it from image !
     // no need on 10.4 void*   bitmapData = malloc(4*1024*768);
 	size_t bytesPerRow = (((w *(bps/8) * 4)+ 0x0000000F) & ~0x0000000F); // 16 byte aligned is good
-	MLogString(1 ,@"create context bps: %d, w: %d, bbr: %d",bps,width,bytesPerRow);
-	int theSize = h * bytesPerRow;
-	unsigned char *destpix = malloc( theSize );
+	MLogString(1 ,@"create context bps: %d, w: %d, bpr: %d",bps,width,bytesPerRow);
+	int datasize = h * bytesPerRow;
+#ifndef GNUSTEP
+	unsigned char *destpix = malloc( datasize );
+	if (destpix == 0) {
+		MLogString(1 ,@"can't alloc memory !");
+		return ;
+	}
+#endif
 	
 	// create a new representation without the alpha plane ...
 	NSBitmapImageRep *destImageRep = [[[NSBitmapImageRep alloc]                                            
-									   initWithBitmapDataPlanes:destpix                                                               
-									   pixelsWide:w                                                          
-									   pixelsHigh:h                                                          
-									   bitsPerSample:bps // [rep bitsPerSample]                                
-									   samplesPerPixel:3                                                     
-									   hasAlpha:NO                                                             
-									   isPlanar:NO                                                             
-									   colorSpaceName:NSCalibratedRGBColorSpace                              
-									   bytesPerRow:bytesPerRow // (spp*width)                                           
-									   bitsPerPixel:24 ] autorelease];          
+					   initWithBitmapDataPlanes:NULL
+					   pixelsWide:w 
+					   pixelsHigh:h 
+					   bitsPerSample:bps // [rep bitsPerSample]
+					   samplesPerPixel:4
+					   hasAlpha:YES 
+					   isPlanar:NO
+					   colorSpaceName:NSCalibratedRGBColorSpace
+					   bytesPerRow:bytesPerRow // (spp*width) 
+					   bitsPerPixel:32 ] autorelease]; 
 	
 	int destBpr = [destImageRep bytesPerRow];
 	int destspp = [destImageRep samplesPerPixel];
+#ifdef GNUSTEP
 	unsigned char* destpix = [destImageRep bitmapData];
+#endif
 	NSLog(@"%s exporting photo Bpr = %d,  Spp = %d (alpha: %d)",__PRETTY_FUNCTION__,
 		  destBpr,destspp, [destImageRep hasAlpha] );
 	
@@ -605,7 +613,8 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		unsigned char *q = (unsigned char *)(destpix + destBpr*y);
 		q[destspp*x] = rgb[0]; // red
 		q[destspp*x+1] = rgb[1]; // green
-		q[destspp*x+2] = rgb[2];
+		q[destspp*x+2] = rgb[2]; // blue
+		q[destspp*x+3] = 255; // alpha
 	}
 	//NSData *photoData = [destImageRep representationUsingType:NSTIFFFileType properties:NULL];
 	//   [photoData writeToFile:@"test.tif" atomically:YES];
@@ -613,17 +622,19 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 #ifdef _TODO_
 	// TODO: compilation !
 	// make data provider from buffer
-	CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, destpix, (width * height * destspp), LqrProviderReleaseData);
+	CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, destpix, datasize, LqrProviderReleaseData);
 	
 	if (provider != NULL) {
 		CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
 		CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault
 		CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
-		CGImageRef imageRef = CGImageCreate(width, height, bitsPerComponent, bitsPerPixel, 
-											bytesPerRow, colorSpaceRef, bitmapInfo,
-											provider, NULL, NO, renderingIntent);
+		CGImageRef imageRef = CGImageCreate(width, height, bitsPerComponent, 
+			bitsPerPixel, 
+			bytesPerRow, colorSpaceRef, bitmapInfo,
+			provider, NULL, NO, renderingIntent);
 	}
-	//free (buffer);
+	//free (buffer); will be done by callback !
+	// retain by quartz ...
 	CGDataProviderRelease(provider);
 	CGColorSpaceRelease(colorspace)
 #endif
@@ -1344,7 +1355,8 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		// TODO: check CFRelease(pixels);
 		CFRelease(source);
 		#endif
-		
+	
+		[window setTitle:[fileName lastPathComponent] ];	
 		[window setTitle:text];
 		}
 	}
