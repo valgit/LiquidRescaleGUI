@@ -184,19 +184,19 @@ NSBitmapImageRep *mask_rep;
 	[mTableImage registerForDraggedTypes:[NSArray arrayWithObjects:NSFilenamesPboardType,NSStringPboardType,NSURLPboardType,nil]];
 	// theIconColumn = [table tableColumnWithIdentifier:@"icon"];
 	// [ic setImageScaling:NSScaleProportionally]; // or NSScaleToFit
-
+	
 	// set the scroll to top !
 	NSPoint pt = NSMakePoint(0.0, [[mParametersView documentView] bounds].size.height);
 	[[mParametersView documentView] scrollPoint:pt];
 	//NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 	[self reset:mResetButton];
 	[self getDefaults];
-
+	
 	//[self setTempPath:NSTemporaryDirectory()]; // TODO better
 	[self setTempPath:[self initTempDirectory]];
 	
 	//NSString* imageName = [[NSBundle mainBundle]
-      //              pathForResource:@"image_broken" ofType:@"png"];
+	//              pathForResource:@"image_broken" ofType:@"png"];
 	//NSImage* _image = [[[NSImage alloc] initWithContentsOfFile:imageName] autorelease];
 	//_image = [[[NSImage alloc] initWithContentsOfFile:imageName] autorelease];
 	_image = NULL;
@@ -209,8 +209,22 @@ NSBitmapImageRep *mask_rep;
 	_retainColor = [[NSColor colorWithCalibratedRed:0.0 green:1.0 blue:0.0 alpha:0.5] retain];
 	_removalColor = [[NSColor colorWithCalibratedRed:1.0 green:0.0 blue:0.0 alpha:0.5] retain];
 	_clearColor = [[NSColor colorWithCalibratedRed:0.0 green:0.0 blue:0.0 alpha:0.0] retain];
-
+	
 	[mMaskToolButton setSelectedSegment:0];
+	
+	// action button
+	NSMenu *popupMenu = [NSMenu new];
+	[popupMenu addItem:[[NSMenuItem new] autorelease]]; //you must add a blank item first!
+	[popupMenu addItemWithTitle:NSLocalizedString(@"Open Presets", nil) 
+						 action:@selector(openPresets:) keyEquivalent:@""];
+	//[popupMenu addItem:[NSMenuItem separatorItem]];
+	[popupMenu addItemWithTitle:NSLocalizedString(@"Save Presets", nil) 
+						 action:@selector(savePresets:) keyEquivalent:@""];
+	[popupMenu addItemWithTitle:NSLocalizedString(@"Reset", nil) 
+						 action:@selector(reset:) keyEquivalent:@""];
+	
+	[[popupMenu itemArray] makeObjectsPerformSelector:@selector(setTarget:) withObject:self];
+	[[mActionButton cell] setMenu:popupMenu];
 }
 
 - (id)init
@@ -518,6 +532,10 @@ NSBitmapImageRep *mask_rep;
 
 #pragma mark -
 #pragma mark worker thread...
+void LqrProviderReleaseData (void *info,const void *data,size_t size)
+{
+	free((void *)data);
+}
 
 - (void) lqrRescaling:(NSDictionary*)infos;
 {
@@ -550,18 +568,28 @@ NSBitmapImageRep *mask_rep;
 		return;
 	}
 	
+	// Allocate the memory for the bitmap.
+	//CGImageAlphaInfo alphaInfo = kCGImageAlphaPremultipliedLast;
+	//CIFormat format = kCIFormatARGB8; kCIFormatRGBA16
+
+	int bps = 8; // bit per sample ( 8 /16 ), get it from image !
+    // no need on 10.4 void*   bitmapData = malloc(4*1024*768);
+	size_t bytesPerRow = (((w *(bps/8) * 4)+ 0x0000000F) & ~0x0000000F); // 16 byte aligned is good
+	MLogString(1 ,@"create context bps: %d, w: %d, bbr: %d",bps,width,bytesPerRow);
+	int theSize = h * bytesPerRow;
+	unsigned char *destpix = malloc( theSize );
 	
 	// create a new representation without the alpha plane ...
 	NSBitmapImageRep *destImageRep = [[[NSBitmapImageRep alloc]                                            
-									   initWithBitmapDataPlanes:NULL                                                               
+									   initWithBitmapDataPlanes:destpix                                                               
 									   pixelsWide:w                                                          
 									   pixelsHigh:h                                                          
-									   bitsPerSample:8 // [rep bitsPerSample]                                
+									   bitsPerSample:bps // [rep bitsPerSample]                                
 									   samplesPerPixel:3                                                     
 									   hasAlpha:NO                                                             
 									   isPlanar:NO                                                             
 									   colorSpaceName:NSCalibratedRGBColorSpace                              
-									   bytesPerRow:0 // (spp*width)                                           
+									   bytesPerRow:bytesPerRow // (spp*width)                                           
 									   bitsPerPixel:24 ] autorelease];          
 	
 	int destBpr = [destImageRep bytesPerRow];
@@ -585,7 +613,7 @@ NSBitmapImageRep *mask_rep;
 #ifdef _TODO_
 	// TODO: compilation !
 	// make data provider from buffer
-	CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, destpix, (width * height * destspp), NULL);
+	CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, destpix, (width * height * destspp), LqrProviderReleaseData);
 	
 	if (provider != NULL) {
 		CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
@@ -595,6 +623,9 @@ NSBitmapImageRep *mask_rep;
 											bytesPerRow, colorSpaceRef, bitmapInfo,
 											provider, NULL, NO, renderingIntent);
 	}
+	//free (buffer);
+	CGDataProviderRelease(provider);
+	CGColorSpaceRelease(colorspace)
 #endif
 	
 	NSImage *image = [[NSImage alloc] initWithSize:[destImageRep size]];
@@ -1214,7 +1245,7 @@ NSBitmapImageRep *mask_rep;
 					focalLengthStr,exposureTimeStr,fNumberStr,exposureBiasStr];
 				/* kCGImagePropertyExifFocalLength kCGImagePropertyExifRigidityTime kCGImagePropertyExifRigidityTime */
 			}  else {
-				text = @"no exif";
+				text = [fileName lastPathComponent];
 			}
 			image = [self createThumbnail:source];
 			//bits = CGDataProviderCopyData(CGImageGetDataProvider(source));
@@ -1314,6 +1345,7 @@ NSBitmapImageRep *mask_rep;
 		CFRelease(source);
 		#endif
 		
+		[window setTitle:text];
 		}
 	}
 }

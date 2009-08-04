@@ -26,6 +26,9 @@
 		1A383AAB10202030007338EA /* toolBrush.tif in Resources */ = {isa = PBXBuildFile; fileRef = 1A383AA910202030007338EA /* toolBrush.tif */; };
 		1A383AAD102020B9007338EA /* toolDelete.tif in Resources */ = {isa = PBXBuildFile; fileRef = 1A383AAC102020B9007338EA /* toolDelete.tif */; };
 		1A71133C1016C47300E4012D /* NSImage+Cropped.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A71133B1016C47300E4012D /* NSImage+Cropped.m */; };
+		1A8D019F1027EFE400085E9F /* zoom-larger.tif in Resources */ = {isa = PBXBuildFile; fileRef = 1A8D019D1027EFE400085E9F /* zoom-larger.tif */; };
+		1A8D01A01027EFE400085E9F /* zoom-smaller.tif in Resources */ = {isa = PBXBuildFile; fileRef = 1A8D019E1027EFE400085E9F /* zoom-smaller.tif */; };
+		1A8D01A31027F0FA00085E9F /* ActionsPD.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 1A8D01A21027F0FA00085E9F /* ActionsPD.tiff */; };
 		1AE5FB78101664CA00E4D78C /* liblqr-1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AE5FB77101664CA00E4D78C /* liblqr-1.a */; };
 		1AE5FB7C101664EB00E4D78C /* libglib-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AE5FB7B101664EB00E4D78C /* libglib-2.0.a */; };
 		1AE5FB7F1016659300E4D78C /* libiconv.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AE5FB7E1016659300E4D78C /* libiconv.dylib */; };
@@ -68,6 +71,9 @@
 		1A383AAC102020B9007338EA /* toolDelete.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = toolDelete.tif; sourceTree = "<group>"; };
 		1A71133A1016C47300E4012D /* NSImage+Cropped.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSImage+Cropped.h"; sourceTree = "<group>"; };
 		1A71133B1016C47300E4012D /* NSImage+Cropped.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSImage+Cropped.m"; sourceTree = "<group>"; };
+		1A8D019D1027EFE400085E9F /* zoom-larger.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "zoom-larger.tif"; sourceTree = "<group>"; };
+		1A8D019E1027EFE400085E9F /* zoom-smaller.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "zoom-smaller.tif"; sourceTree = "<group>"; };
+		1A8D01A21027F0FA00085E9F /* ActionsPD.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = ActionsPD.tiff; sourceTree = "<group>"; };
 		1AE5FB77101664CA00E4D78C /* liblqr-1.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "liblqr-1.a"; path = "osxlibs/lib/liblqr-1.a"; sourceTree = "<group>"; };
 		1AE5FB7B101664EB00E4D78C /* libglib-2.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libglib-2.0.a"; path = "osxlibs/lib/libglib-2.0.a"; sourceTree = "<group>"; };
 		1AE5FB7E1016659300E4D78C /* libiconv.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.dylib; path = /usr/lib/libiconv.dylib; sourceTree = "<absolute>"; };
@@ -178,6 +184,7 @@
 			children = (
 				1A1877001015D2B8002EC52F /* MainMenu.nib */,
 				1A1877061015D2EF002EC52F /* Add.tiff */,
+				1A8D01A21027F0FA00085E9F /* ActionsPD.tiff */,
 				1A1877071015D2EF002EC52F /* image_broken.png */,
 				1A1877081015D2EF002EC52F /* Remove.tiff */,
 				1A1877091015D2EF002EC52F /* update.tiff */,
@@ -185,6 +192,8 @@
 				1A383AA910202030007338EA /* toolBrush.tif */,
 				1A383AAC102020B9007338EA /* toolDelete.tif */,
 				8D1107310486CEB800E47090 /* Info.plist */,
+				1A8D019D1027EFE400085E9F /* zoom-larger.tif */,
+				1A8D019E1027EFE400085E9F /* zoom-smaller.tif */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
 			);
 			name = Resources;
@@ -251,6 +260,9 @@
 				1A383AAA10202030007338EA /* toolErase.tif in Resources */,
 				1A383AAB10202030007338EA /* toolBrush.tif in Resources */,
 				1A383AAD102020B9007338EA /* toolDelete.tif in Resources */,
+				1A8D019F1027EFE400085E9F /* zoom-larger.tif in Resources */,
+				1A8D01A01027EFE400085E9F /* zoom-smaller.tif in Resources */,
+				1A8D01A31027F0FA00085E9F /* ActionsPD.tiff in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

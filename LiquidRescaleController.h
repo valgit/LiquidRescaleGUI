@@ -5,6 +5,7 @@
 @class ImagePanelView;
 @class ImageDisplayView;
 @class CTProgressBadge;
+@class DKActionButton;
 
 #include <lqr.h>
 
@@ -44,6 +45,8 @@
   IBOutlet NSButton* mResetMaskButton;
   IBOutlet NSSlider* mBrushSizeSlider;
   IBOutlet NSSlider* mBrushWeightSlider;
+  
+  IBOutlet DKActionButton* mActionButton;
   
   // ouput options
   IBOutlet NSTextField *mOuputFile;
@@ -163,6 +166,7 @@
 
 - (void)setupImageSize;
 
+- (IBAction) setZoom: (id)sender;
 -(void)setZoomFactor:(double)factor;
 
 @end
