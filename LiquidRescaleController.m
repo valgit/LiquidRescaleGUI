@@ -577,17 +577,16 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	size_t bytesPerRow = (((w *(bps/8) * 4)+ 0x0000000F) & ~0x0000000F); // 16 byte aligned is good
 	MLogString(1 ,@"create context bps: %d, w: %d, bpr: %d",bps,width,bytesPerRow);
 	int datasize = h * bytesPerRow;
-#ifndef GNUSTEP
+
 	unsigned char *destpix = malloc( datasize );
 	if (destpix == 0) {
 		MLogString(1 ,@"can't alloc memory !");
 		return ;
 	}
-#endif
 	
 	// create a new representation without the alpha plane ...
 	NSBitmapImageRep *destImageRep = [[[NSBitmapImageRep alloc]                                            
-					   initWithBitmapDataPlanes:NULL
+					   initWithBitmapDataPlanes:&destpix
 					   pixelsWide:w 
 					   pixelsHigh:h 
 					   bitsPerSample:bps // [rep bitsPerSample]
@@ -600,9 +599,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	
 	int destBpr = [destImageRep bytesPerRow];
 	int destspp = [destImageRep samplesPerPixel];
-#ifdef GNUSTEP
-	unsigned char* destpix = [destImageRep bitmapData];
-#endif
+//	unsigned char* destpix = [destImageRep bitmapData];
 	NSLog(@"%s exporting photo Bpr = %d,  Spp = %d (alpha: %d)",__PRETTY_FUNCTION__,
 		  destBpr,destspp, [destImageRep hasAlpha] );
 	
@@ -616,8 +613,6 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		q[destspp*x+2] = rgb[2]; // blue
 		q[destspp*x+3] = 255; // alpha
 	}
-	//NSData *photoData = [destImageRep representationUsingType:NSTIFFFileType properties:NULL];
-	//   [photoData writeToFile:@"test.tif" atomically:YES];
 	
 #ifdef _TODO_
 	// TODO: compilation !
