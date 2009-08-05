@@ -1363,6 +1363,8 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	
 		[window setTitle:[fileName lastPathComponent] ];	
 		[window setTitle:text];
+
+		[_imageView setBeforeImage: _image];
 		}
 	}
 }
@@ -1712,7 +1714,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
         NSImage* imgcrop = [_image imageFromRect:selrect];
         //[_imageView setImageScaling:NSScaleProportionally];
         // testing : [_imageView setBeforeImage: imgcrop];
-        [_imageView setBeforeImage: _image];
+        //[_imageView setBeforeImage: _image];
 	[_imageView setSelectionRectOrigin:anchor];
         //[imgcrop release];
 	if (_rescaleImage) {

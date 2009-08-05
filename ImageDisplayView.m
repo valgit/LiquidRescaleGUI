@@ -43,6 +43,7 @@
 {
 	_selectionRect.origin.x = origin.x;
 	_selectionRect.origin.y = origin.y;
+	[self setNeedsDisplay:YES];
 }
 
 - (void) setBeforeImage:(NSImage*)image
@@ -177,11 +178,12 @@
         NSRect destRect;
         destRect.origin = imageOrigin;
         destRect.size = imageSize;
-        
+       	/*	 
 	NSLog(@"%s start at: (%f,%f) \n\tdest: (%f,%f) \n\tfrom: (%f,%f)",__PRETTY_FUNCTION__,
 		_selectionRect.origin.x,_selectionRect.origin.y,
 		destRect.size.width,destRect.size.height,
 		imageSize.width,imageSize.height);
+	*/
         [_image drawInRect:destRect
                                 fromRect:NSMakeRect(_selectionRect.origin.x,_selectionRect.origin.y,
 							 imageSize.width,imageSize.height)
