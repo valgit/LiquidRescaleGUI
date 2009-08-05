@@ -225,6 +225,8 @@ NSBitmapImageRep *mask_rep;
 	
 	[[popupMenu itemArray] makeObjectsPerformSelector:@selector(setTarget:) withObject:self];
 	[[mActionButton cell] setMenu:popupMenu];
+	[mAddWeightMaskButton setState:NSOffState];
+	[mPreserveSkinTonesButton setState:NSOffState];
 }
 
 - (id)init
@@ -534,6 +536,7 @@ NSBitmapImageRep *mask_rep;
 #pragma mark worker thread...
 void LqrProviderReleaseData (void *info,const void *data,size_t size)
 {
+	MLogString(1 ,@"");
 	free((void *)data);
 }
 
@@ -613,25 +616,29 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		q[destspp*x+2] = rgb[2]; // blue
 		q[destspp*x+3] = 255; // alpha
 	}
-	
+
+#define _TODO_ 1	
 #ifdef _TODO_
 	// TODO: compilation !
 	// make data provider from buffer
 	CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, destpix, datasize, LqrProviderReleaseData);
 	
 	if (provider != NULL) {
-		CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
-		CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault
+		CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+		CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault;
 		CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
-		CGImageRef imageRef = CGImageCreate(width, height, bitsPerComponent, 
-			bitsPerPixel, 
+		CGImageRef imageRef = CGImageCreate(width, height, 8, 
+			32, 
 			bytesPerRow, colorSpaceRef, bitmapInfo,
 			provider, NULL, NO, renderingIntent);
+		//free (buffer); will be done by callback !
+		// retain by quartz ...
+		CGDataProviderRelease(provider);
+		CGColorSpaceRelease(colorSpaceRef);
+		// only 10.5 here ...
+		destImageRep = [[[NSBitmapImageRep alloc] initWithCGImage:imageRef] autorelease];
 	}
-	//free (buffer); will be done by callback !
-	// retain by quartz ...
-	CGDataProviderRelease(provider);
-	CGColorSpaceRelease(colorspace)
+	
 #endif
 	
 	NSImage *image = [[NSImage alloc] initWithSize:[destImageRep size]];
@@ -1663,6 +1670,12 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 {
         if (_zoomfactor != factor)
                 _zoomfactor = factor;
+}
+
+- (IBAction) setZoom: (id)sender;
+{
+	MLogString(1 ,@"value : %f",[sender floatValue]);
+	[self setZoomFactor:[sender floatValue]];
 }
 
 #pragma mark <AppDataSource>
