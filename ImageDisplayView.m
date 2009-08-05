@@ -16,6 +16,7 @@
 	_beforeImage = nil;
 	_afterImage = nil;
 	_maskImage = nil;
+	_selectionRect = NSMakeRect(0,0,frame.size.width,frame.size.height);
    }
    return self;
 }
@@ -36,6 +37,12 @@
 - (id) delegate;
 {
 	return delegate;
+}
+
+- (void) setSelectionRectOrigin:(NSPoint)origin;
+{
+	_selectionRect.origin.x = origin.x;
+	_selectionRect.origin.y = origin.y;
 }
 
 - (void) setBeforeImage:(NSImage*)image
@@ -171,8 +178,13 @@
         destRect.origin = imageOrigin;
         destRect.size = imageSize;
         
+	NSLog(@"%s start at: (%f,%f) \n\tdest: (%f,%f) \n\tfrom: (%f,%f)",__PRETTY_FUNCTION__,
+		_selectionRect.origin.x,_selectionRect.origin.y,
+		destRect.size.width,destRect.size.height,
+		imageSize.width,imageSize.height);
         [_image drawInRect:destRect
-                                fromRect:NSMakeRect(0,0, imageSize.width,imageSize.height)
+                                fromRect:NSMakeRect(_selectionRect.origin.x,_selectionRect.origin.y,
+							 imageSize.width,imageSize.height)
                                 operation:NSCompositeSourceOver
                                 fraction:1.0];
 

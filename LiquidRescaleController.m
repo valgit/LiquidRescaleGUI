@@ -529,6 +529,9 @@ NSBitmapImageRep *mask_rep;
   [NSApp stopModal ];
   [NSApp endSheet: mProgressPanel ];
   [mProgressPanel orderOut: self ];
+
+  [_imageView setAfterImage:_rescaleImage];
+  [_imageView setDisplayAfter:YES];
   //[panel close];
 }
 
@@ -576,8 +579,9 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	//CIFormat format = kCIFormatARGB8; kCIFormatRGBA16
 
 	int bps = 8; // bit per sample ( 8 /16 ), get it from image !
+	int destspp = 4;
     // no need on 10.4 void*   bitmapData = malloc(4*1024*768);
-	size_t bytesPerRow = (((w *(bps/8) * 4)+ 0x0000000F) & ~0x0000000F); // 16 byte aligned is good
+	size_t bytesPerRow = (((w *(bps/ destspp) * 4)+ 0x0000000F) & ~0x0000000F); // 16 byte aligned is good
 	MLogString(1 ,@"create context bps: %d, w: %d, bpr: %d",bps,width,bytesPerRow);
 	int datasize = h * bytesPerRow;
 
@@ -587,38 +591,26 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		return ;
 	}
 	
-	// create a new representation without the alpha plane ...
-	NSBitmapImageRep *destImageRep = [[[NSBitmapImageRep alloc]                                            
-					   initWithBitmapDataPlanes:&destpix
-					   pixelsWide:w 
-					   pixelsHigh:h 
-					   bitsPerSample:bps // [rep bitsPerSample]
-					   samplesPerPixel:4
-					   hasAlpha:YES 
-					   isPlanar:NO
-					   colorSpaceName:NSCalibratedRGBColorSpace
-					   bytesPerRow:bytesPerRow // (spp*width) 
-					   bitsPerPixel:32 ] autorelease]; 
-	
+#if 0	
 	int destBpr = [destImageRep bytesPerRow];
 	int destspp = [destImageRep samplesPerPixel];
 //	unsigned char* destpix = [destImageRep bitmapData];
 	NSLog(@"%s exporting photo Bpr = %d,  Spp = %d (alpha: %d)",__PRETTY_FUNCTION__,
 		  destBpr,destspp, [destImageRep hasAlpha] );
-	
+#endif	
 	unsigned char *rgb;
 	int x,y;
 	lqr_carver_scan_reset(carver);
 	while (lqr_carver_scan(carver, &x, &y, &rgb)) {
-		unsigned char *q = (unsigned char *)(destpix + destBpr*y);
+		unsigned char *q = (unsigned char *)(destpix + bytesPerRow*y);
 		q[destspp*x] = rgb[0]; // red
 		q[destspp*x+1] = rgb[1]; // green
 		q[destspp*x+2] = rgb[2]; // blue
 		q[destspp*x+3] = 255; // alpha
 	}
 
-#define _TODO_ 1	
-#ifdef _TODO_
+	NSBitmapImageRep *destImageRep;
+#ifndef GNUSTEP
 	// TODO: compilation !
 	// make data provider from buffer
 	CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, destpix, datasize, LqrProviderReleaseData);
@@ -638,17 +630,28 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		// only 10.5 here ...
 		destImageRep = [[[NSBitmapImageRep alloc] initWithCGImage:imageRef] autorelease];
 	}
-	
+#else	
+	// create a new representation without the alpha plane ...
+	destImageRep = [[[NSBitmapImageRep alloc]                                            
+					   initWithBitmapDataPlanes:&destpix
+					   pixelsWide:w 
+					   pixelsHigh:h 
+					   bitsPerSample:bps // [rep bitsPerSample]
+					   samplesPerPixel:destspp
+					   hasAlpha:YES 
+					   isPlanar:NO
+					   colorSpaceName:NSCalibratedRGBColorSpace
+					   bytesPerRow:bytesPerRow // (spp*width) 
+					   bitsPerPixel:32 ] autorelease]; 
 #endif
 	
 	NSImage *image = [[NSImage alloc] initWithSize:[destImageRep size]];
 	[image addRepresentation:destImageRep];
-	
+
+	//[destImageRep release];	
 	[_rescaleImage release];
 	_rescaleImage = image;
 	//[_panelImageView reloadImage];
-	[_imageView setAfterImage:_rescaleImage];
-	[_imageView setDisplayAfter:YES];
 	
 	//TODO: should be done on release ?
 	/**** (IV) delete structures ? ****/
@@ -1708,7 +1711,9 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
                 viewsize.width*percent,viewsize.height*percent);
         NSImage* imgcrop = [_image imageFromRect:selrect];
         //[_imageView setImageScaling:NSScaleProportionally];
-        [_imageView setBeforeImage: imgcrop];
+        // testing : [_imageView setBeforeImage: imgcrop];
+        [_imageView setBeforeImage: _image];
+	[_imageView setSelectionRectOrigin:anchor];
         //[imgcrop release];
 	if (_rescaleImage) {
 		NSLog(@"%s need to set after image",__PRETTY_FUNCTION__);

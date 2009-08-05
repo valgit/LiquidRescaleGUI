@@ -16,6 +16,7 @@
 	NSColor *_bgColor;
 
 	BOOL _displayAfter;
+	NSRect _selectionRect;
 }
 
 - (id)initWithFrame:(NSRect)frame;
@@ -34,6 +35,8 @@
 
 - (void) setDelegate:(id)del;
 - (id) delegate;
+
+- (void) setSelectionRectOrigin:(NSPoint)origin;
 
 @end
 
