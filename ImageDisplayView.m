@@ -115,93 +115,79 @@
 
 - (void)drawRect:(NSRect)rect;
 {
-     NSRect bounds = [self bounds];
-
+	NSRect bounds = [self bounds];
+	
     //NSLog(@"%s",__PRETTY_FUNCTION__);
     // fill the background 
     [_bgColor set];
     NSRectFill(bounds);
-
+	
 #if 0
 	// border ?
 	NSBezierPath * path = [NSBezierPath bezierPathWithRect:bounds]; 
 	[path setLineWidth:3]; 
 	[[NSColor whiteColor] set];
-	 [path stroke]; 
+	[path stroke]; 
 #endif
-
+	
     // draw the image !
     NSImage* _image;
     if (_displayAfter)	{
-	_image = [self afterImage];
+		_image = [self afterImage];
     } else
-	_image = [self beforeImage];
+		_image = [self beforeImage];
 	
     if (_image) {
-	NSSize thumbsize = [_image size];
-    //NSLog(@"%s thumb (%f,%f)",__PRETTY_FUNCTION__,thumbsize.width,thumbsize.height);
-#if 0
-	//[_image drawAtPoint:NSZeroPoint 
-	//	fromRect:NSMakeRect(0,0, thumbsize.width,thumbsize.height) 
-	//	operation:NSCompositeSourceOver fraction:1.0];
-	//[_image setFlipped:YES]; 
-	[_image drawInRect: bounds  
-		fromRect: NSZeroRect 
-		operation: NSCompositeSourceOver fraction: 1.0]; 
-
-	//[_image drawInRect:NSMakeRect( 0, 0, rect.size.width,rect.size.height)
-				 //fromRect:NSMakeRect(0,0, thumbsize.width,thumbsize.height)
-	//			 fromRect:NSZeroRect
-	//			operation:NSCompositeSourceOver
-	//			 fraction:1.0];
-#else
+		//NSSize thumbsize = [_image size];
+		//NSLog(@"%s thumb (%f,%f)",__PRETTY_FUNCTION__,thumbsize.width,thumbsize.height);
         [[NSGraphicsContext currentContext] setImageInterpolation: NSImageInterpolationHigh];
-	//[_image setCacheMode: NSImageCacheNever];
+		//[_image setCacheMode: NSImageCacheNever];
         
         NSSize viewSize  = [self bounds].size;
         NSSize imageSize = [_image size];
-	double imageScale = viewSize.width/thumbsize.width;
-	//NSLog(@"%s scale (%f,%f)",__PRETTY_FUNCTION__,imageScale);
-        NSAffineTransform* at = [NSAffineTransform transform];
+		//double imageScale = viewSize.width/thumbsize.width;
+		//NSLog(@"%s scale (%f,%f)",__PRETTY_FUNCTION__,imageScale);
+		//    NSAffineTransform* at = [NSAffineTransform transform];
         //[at scaleBy:imageScale];
         //needed ? imageSize = [at transformSize:imageSize];
-	//NSLog(@"%s thumb (%f,%f)",__PRETTY_FUNCTION__,imageSize.width,imageSize.height);
-
+		//NSLog(@"%s thumb (%f,%f)",__PRETTY_FUNCTION__,imageSize.width,imageSize.height);
+		
         NSPoint viewCenter;
         viewCenter.x = viewSize.width  * 0.50;
         viewCenter.y = viewSize.height * 0.50;
-
+		
         NSPoint imageOrigin = viewCenter;
         imageOrigin.x -= imageSize.width  * 0.50;
         imageOrigin.y -= imageSize.height * 0.50;
-
+		
         NSRect destRect;
-        destRect.origin = imageOrigin;
+        //destRect.origin = imageOrigin;
+		destRect.origin.x = 0;
+		destRect.origin.y = 0;
         destRect.size = imageSize;
        	/*	 
-	NSLog(@"%s start at: (%f,%f) \n\tdest: (%f,%f) \n\tfrom: (%f,%f)",__PRETTY_FUNCTION__,
-		_selectionRect.origin.x,_selectionRect.origin.y,
-		destRect.size.width,destRect.size.height,
-		imageSize.width,imageSize.height);
-	*/
+		 NSLog(@"%s start at: (%f,%f) \n\tdest: (%f,%f) \n\tfrom: (%f,%f)",__PRETTY_FUNCTION__,
+		 _selectionRect.origin.x,_selectionRect.origin.y,
+		 destRect.size.width,destRect.size.height,
+		 imageSize.width,imageSize.height);
+		 */
         [_image drawInRect:destRect
-                                fromRect:NSMakeRect(_selectionRect.origin.x,_selectionRect.origin.y,
-							 imageSize.width,imageSize.height)
-                                operation:NSCompositeSourceOver
-                                fraction:1.0];
-
-	if (_maskImage) {
-		NSSize imageSize = [_maskImage size];
-		//NSLog(@"%s image mask (%f,%f)",__PRETTY_FUNCTION__,
+				  fromRect:NSMakeRect(_selectionRect.origin.x,_selectionRect.origin.y,
+									  imageSize.width,imageSize.height)
+				 operation:NSCompositeSourceOver
+				  fraction:1.0];
+		
+		if (_maskImage) {
+			NSSize imageSize = [_maskImage size];
+			//NSLog(@"%s image mask (%f,%f)",__PRETTY_FUNCTION__,
 			//imageSize.width,imageSize.height);
-		[_maskImage drawInRect:destRect
-                                fromRect:NSMakeRect(_selectionRect.origin.x,_selectionRect.origin.y,
-													imageSize.width,imageSize.height)
-                                operation:NSCompositeSourceAtop//NSCompositeSourceOver
-                                fraction:1.0];
+			[_maskImage drawInRect:destRect
+						  fromRect:NSMakeRect(_selectionRect.origin.x,_selectionRect.origin.y,
+											  imageSize.width,imageSize.height)
+						 operation:NSCompositeSourceAtop//NSCompositeSourceOver
+						  fraction:1.0];
+		}
 	}
-#endif
-  }
 }
 
 #pragma mark  <event handling>

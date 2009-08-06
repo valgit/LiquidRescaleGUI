@@ -3,6 +3,7 @@
 #ifndef GNUSTEP
 #import <ApplicationServices/ApplicationServices.h>
 #import "NSImage+GTImageConversion.h"
+#include <Carbon/Carbon.h> // for the Dock
 #else
 #import "NSImage-ProportionalScaling.h"
 #endif
@@ -985,6 +986,11 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
         }
 }
 
+- (IBAction) setPreserveSkin: (id)sender;
+{
+	NSLog(@"%s",__PRETTY_FUNCTION__);
+}
+
 #pragma mark -
 #pragma mark brush parameters
 
@@ -1125,7 +1131,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		//LiquidRescaleTask=nil;
     }
 #ifndef GNUSTEP
-	// 10.5 ? RestoreApplicationDockTileImage();
+	RestoreApplicationDockTileImage();
 #endif
     [NSApp terminate:nil];
     return YES;
@@ -1181,7 +1187,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 // button action ...
 - (IBAction)addImage:(id)sender
 {
-	NSLog(@"%s",__PRETTY_FUNCTION__);
+	MLogString(1 ,@"");
 	// Create the File Open Panel class.
 	NSOpenPanel* oPanel = [NSOpenPanel openPanel];
 	
@@ -1325,6 +1331,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 			h = CGImageGetHeight( cgiref );
 			Bpr = CGImageGetBytesPerRow(cgiref);
 			
+			MLogString(1 ,@"w: %d h: %d Bpp: %d, Bps: %d",w,h,CGImageGetBitsPerComponent(cgiref),CGImageGetBitsPerPixel(cgiref));
 			CFDataRef imageData = CGDataProviderCopyData( CGImageGetDataProvider( cgiref ));
 			pixels = (const unsigned char  *)CFDataGetBytePtr(imageData);
 #else
@@ -1703,7 +1710,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 - (void) imagePanelViewSelectionDidChange:(NSView*)imageView;
 {
         NSPoint anchor = [(ImagePanelView*)imageView anchor];
-        //NSLog(@"%s new sel : %f %f",__PRETTY_FUNCTION__,anchor.x,anchor.y);
+        NSLog(@"%s new sel : %f %f",__PRETTY_FUNCTION__,anchor.x,anchor.y);
 
         // get the crop
         double percent = 100.0 / [self zoomFactor];
@@ -1711,12 +1718,14 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
         NSRect selrect = NSMakeRect(
                 anchor.x,anchor.y,
                 viewsize.width*percent,viewsize.height*percent);
-        NSImage* imgcrop = [_image imageFromRect:selrect];
+		// not needed anymore...
+        //NSImage* imgcrop = [_image imageFromRect:selrect];
         //[_imageView setImageScaling:NSScaleProportionally];
         // testing : [_imageView setBeforeImage: imgcrop];
         //[_imageView setBeforeImage: _image];
 	[_imageView setSelectionRectOrigin:anchor];
         //[imgcrop release];
+		#if 0
 	if (_rescaleImage) {
 		NSLog(@"%s need to set after image",__PRETTY_FUNCTION__);
 	}
@@ -1725,6 +1734,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		//NSImage* imgcrop = [_imageMask imageFromRect:selrect];
 		//[_imageView setMaskImage: imgcrop];
 	}
+	#endif
 }
 
 #pragma mark Display
@@ -1733,7 +1743,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 {
 	// need some config ?
 	double mRadius = [mBrushSizeSlider doubleValue];
-	double mWeight = [self brushPressure]; //[mBrushWeightSlider doubleValue];
+	//double mWeight = [self brushPressure]; //[mBrushWeightSlider doubleValue];
 	//MLogString(1 ,@"radius : %f w: %f",mRadius, mWeight);
 	// Create the shape of the tip of the brush. Code currently assumes the bounding
 	//      box of the shape is square (height == width)
@@ -2325,7 +2335,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		    [mProgressIndicator setDoubleValue:0];
 		    [mProgressIndicator stopAnimation:self];
 #ifndef GNUSTEP
-			// 10.5 RestoreApplicationDockTileImage();
+			RestoreApplicationDockTileImage();
 #endif
 		}
         else
@@ -2338,7 +2348,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
         [mProgressIndicator setDoubleValue:0];
 	[mProgressIndicator stopAnimation:self];
 #ifndef GNUSTEP
-	// 10.5 RestoreApplicationDockTileImage();
+	RestoreApplicationDockTileImage();
 #endif
     }
     [mProgressText setStringValue:message];
