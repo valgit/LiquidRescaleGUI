@@ -1721,9 +1721,9 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		NSLog(@"%s need to set after image",__PRETTY_FUNCTION__);
 	}
 	if (_imageMask) {
-		//NSLog(@"%s need to set mask image",__PRETTY_FUNCTION__);
-		NSImage* imgcrop = [_imageMask imageFromRect:selrect];
-		[_imageView setMaskImage: imgcrop];
+		NSLog(@"%s need to set mask image",__PRETTY_FUNCTION__);
+		//NSImage* imgcrop = [_imageMask imageFromRect:selrect];
+		//[_imageView setMaskImage: imgcrop];
 	}
 }
 

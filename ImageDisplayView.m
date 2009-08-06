@@ -156,7 +156,7 @@
 	//			 fraction:1.0];
 #else
         [[NSGraphicsContext currentContext] setImageInterpolation: NSImageInterpolationHigh];
-	[_image setCacheMode: NSImageCacheNever];
+	//[_image setCacheMode: NSImageCacheNever];
         
         NSSize viewSize  = [self bounds].size;
         NSSize imageSize = [_image size];
@@ -195,7 +195,8 @@
 		//NSLog(@"%s image mask (%f,%f)",__PRETTY_FUNCTION__,
 			//imageSize.width,imageSize.height);
 		[_maskImage drawInRect:destRect
-                                fromRect:NSMakeRect(0,0, imageSize.width,imageSize.height)
+                                fromRect:NSMakeRect(_selectionRect.origin.x,_selectionRect.origin.y,
+													imageSize.width,imageSize.height)
                                 operation:NSCompositeSourceAtop//NSCompositeSourceOver
                                 fraction:1.0];
 	}
