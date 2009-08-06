@@ -159,7 +159,8 @@
   [badgeOverlay lockFocus];
 	[appIcon compositeToPoint:NSZeroPoint operation:NSCompositeDestinationOver];
   [badgeOverlay unlockFocus];
-  [[badgeOverlay TIFFRepresentation] writeToFile:@"/tmp/badge.tif" atomically:NO];
+  // check f needed ?
+  //[[badgeOverlay TIFFRepresentation] writeToFile:@"/tmp/badge.tif" atomically:NO];
   [NSApp setApplicationIconImage:badgeOverlay];
   }
 

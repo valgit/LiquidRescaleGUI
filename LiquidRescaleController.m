@@ -1334,6 +1334,8 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 			MLogString(1 ,@"w: %d h: %d Bpp: %d, Bps: %d",w,h,CGImageGetBitsPerComponent(cgiref),CGImageGetBitsPerPixel(cgiref));
 			CFDataRef imageData = CGDataProviderCopyData( CGImageGetDataProvider( cgiref ));
 			pixels = (const unsigned char  *)CFDataGetBytePtr(imageData);
+			// display it on dock !
+		        OverlayApplicationDockTileImage( cgiref);
 #else
 			
 		  Bpr =[rep bytesPerRow];
