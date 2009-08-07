@@ -98,6 +98,7 @@
     double _zoomfactor;
     NSImage* _image;
     NSImage* _rescaleImage;
+    int bits;
 
     NSImage* _imageMask;
 

@@ -549,29 +549,71 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		  // TODO: this part should be done on load ...
 		
 		  int             Bpr;
-		 // int             spp;
+		  int             spp;
 		  int             w;
 		  int             h;
 		  const unsigned char  *pixels;
+		  size_t datalen = 0;
+		  LqrColDepth  coldepth = LQR_COLDEPTH_8I;
 #ifndef GNUSTEP
 			CGImageRef cgiref = CGImageSourceCreateImageAtIndex(source, 0, NULL);
 			w = CGImageGetWidth( cgiref );
 			h = CGImageGetHeight( cgiref );
 			Bpr = CGImageGetBytesPerRow(cgiref);
+			spp =  CGImageGetBitsPerPixel(cgiref)/CGImageGetBitsPerComponent(cgiref);
 			
-			MLogString(1 ,@"w: %d h: %d Bpp: %d, Bps: %d",w,h,CGImageGetBitsPerComponent(cgiref),CGImageGetBitsPerPixel(cgiref));
+			MLogString(1 ,@"w: %d h: %d Bpp: %d, Bps: %d , spp: %d",w,h,
+				CGImageGetBitsPerComponent(cgiref),CGImageGetBitsPerPixel(cgiref),spp);
 			CFDataRef imageData = CGDataProviderCopyData( CGImageGetDataProvider( cgiref ));
 			pixels = (const unsigned char  *)CFDataGetBytePtr(imageData);
+			datalen = w * h * 3 * (CGImageGetBitsPerComponent(cgiref)/8);
+			unsigned char* img_bits = (unsigned char*)malloc(datalen);
+			bits = CGImageGetBitsPerComponent(cgiref);
+			switch (bits) {
+			case 8 :  {
+				coldepth = LQR_COLDEPTH_8I;
+				int x,y;
+				for (y=0; y<h; y++) {
+				       unsigned char *p = (unsigned char *)(pixels + Bpr*y);
+				       unsigned char* _imptr = img_bits + y * w * 3;
+				       for (x=0; x<w; x++/*,p+=spp*/) {
+					// maybe we should use the alpha plane here ...
+					_imptr[3*x] = p[3*x];
+					_imptr[3*x+1] =p[3*x+1];
+					_imptr[3*x+2] = p[3*x+2];
+				       }
+				   }
+				}
+				break;
+			case 16 : {
+				coldepth = LQR_COLDEPTH_16I; // better way ?
+				int x,y;
+				for (y=0; y<h; y++) {
+				       unsigned short *p = (unsigned short *)(pixels + Bpr*y);
+				       unsigned short* _imptr = img_bits + y * w * 3;
+				       for (x=0; x<w; x++/*,p+=spp*/) {
+					// maybe we should use the alpha plane here ...
+					_imptr[3*x] = p[3*x];
+					_imptr[3*x+1] =p[3*x+1];
+					_imptr[3*x+2] = p[3*x+2];
+				       }
+				   }
+				}
+				break;
+			default :
+				MLogString(1 ,@"unsupported bpp :%d !",CGImageGetBitsPerComponent(cgiref));
+			}
+
 #else
 			
 		  Bpr =[rep bytesPerRow];
-		  //spp =[rep samplesPerPixel];
+		  spp =[rep samplesPerPixel];
 		  w =[rep pixelsWide];
 		  h =[rep pixelsHigh];
 		  pixels =[rep bitmapData];
-#endif
-		// TODO: use a progress window ?
-		  unsigned char* img_bits = (unsigned char*)malloc(w*h*3);
+
+		  datalen = w * Bpr;
+		  unsigned char* img_bits = (unsigned char*)malloc(datalen);
 		    int x,y;
 		  for (y=0; y<h; y++) {
 		       unsigned char *p = (unsigned char *)(pixels + Bpr*y);
@@ -584,13 +626,14 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		       }
 		   }
 
+#endif
 		/* (I.1) swallow the buffer in a (minimal) LqrCarver object
 		  *       (arguments are width, height and number of colour channels) */
-		carver = lqr_carver_new_ext(img_bits, w, h, 3,LQR_COLDEPTH_8I); // LQR_COLDEPTH_16I
+		carver = lqr_carver_new_ext(img_bits, w, h, spp, coldepth);
 
 		// TODO: is it needed ?
 		// Ask Lqr library to preserve our picture
-		lqr_carver_set_preserve_input_image(carver);
+		// not needed lqr_carver_set_preserve_input_image(carver);
 		#ifndef GNUSTEP
 		// TODO: check CFRelease(pixels);
 		CFRelease(source);
@@ -632,10 +675,10 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	//CGImageAlphaInfo alphaInfo = kCGImageAlphaPremultipliedLast;
 	//CIFormat format = kCIFormatARGB8; kCIFormatRGBA16
 
-	int bps = 8; // bit per sample ( 8 /16 ), get it from image !
+	int bps = bits; // bit per sample ( 8 /16 ), get it from image !
 	int destspp = 4;
     // no need on 10.4 void*   bitmapData = malloc(4*1024*768);
-	size_t bytesPerRow = (((w *(bps/ destspp) * 4)+ 0x0000000F) & ~0x0000000F); // 16 byte aligned is good
+	size_t bytesPerRow = (((w *(bps/ 8) * destspp)+ 0x0000000F) & ~0x0000000F); // 16 byte aligned is good
 	MLogString(1 ,@"create context bps: %d, w: %d, bpr: %d",bps,width,bytesPerRow);
 	int datasize = h * bytesPerRow;
 
@@ -653,15 +696,32 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		  destBpr,destspp, [destImageRep hasAlpha] );
 #endif	
 	unsigned char *rgb;
-	unsigned short *rgbOut16=0;
 	int x,y;
 	lqr_carver_scan_reset(carver);
-	while (lqr_carver_scan_ext(carver, &x, &y,(void**) &rgb)) {
-		unsigned char *q = (unsigned char *)(destpix + bytesPerRow*y);
-		q[destspp*x] = rgb[0]; // red
-		q[destspp*x+1] = rgb[1]; // green
-		q[destspp*x+2] = rgb[2]; // blue
-		q[destspp*x+3] = 255; // alpha
+	switch (bits) {
+	case 8 : {
+		while (lqr_carver_scan_ext(carver, &x, &y,(void**) &rgb)) {
+			unsigned char *q = (unsigned char *)(destpix + bytesPerRow*y);
+			q[destspp*x] = rgb[0]; // red
+			q[destspp*x+1] = rgb[1]; // green
+			q[destspp*x+2] = rgb[2]; // blue
+			q[destspp*x+3] = 255; // alpha
+		}
+		}
+		break;
+	case 16 : {
+		unsigned short *rgbOut16=0;
+		while (lqr_carver_scan_ext(carver, &x, &y,(void**) &rgbOut16)) {
+			unsigned short *q = (unsigned short *)(destpix + bytesPerRow*y);
+			q[destspp*x] = rgbOut16[0]; // red
+			q[destspp*x+1] = rgbOut16[1]; // green
+			q[destspp*x+2] = rgbOut16[2]; // blue
+			q[destspp*x+3] = 255; // alpha
+		}
+		}
+		break;
+	default :
+		MLogString(1 ,@"unsupported bit depth : %d",bits);
 	}
 
 	NSBitmapImageRep *destImageRep;
@@ -672,10 +732,10 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	
 	if (provider != NULL) {
 		CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
-		CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault;
+		CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault || kCGBitmapAlphaInfoMask;
 		CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
-		CGImageRef imageRef = CGImageCreate(width, height, 8, 
-			32, 
+		CGImageRef imageRef = CGImageCreate(width, height, bits, 
+			destspp*bits, 
 			bytesPerRow, colorSpaceRef, bitmapInfo,
 			provider, NULL, NO, renderingIntent);
 		//free (buffer); will be done by callback !
@@ -684,6 +744,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		CGColorSpaceRelease(colorSpaceRef);
 		// only 10.5 here ...
 		destImageRep = [[[NSBitmapImageRep alloc] initWithCGImage:imageRef] autorelease];
+		
 	}
 #else	
 	// create a new representation without the alpha plane ...
@@ -2471,3 +2532,4 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 
 
 @end
+
