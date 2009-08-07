@@ -160,8 +160,11 @@ LqrRetVal my_progress_end(const gchar *message)
  * LQR_ER_BRIGHTNESS (sobel)
  */
 
-// TODO: test
-NSBitmapImageRep *mask_rep;
+void LqrProviderReleaseData (void *info,const void *data,size_t size)
+{
+	MLogString(1 ,@"");
+	free((void *)data);
+}
 
 @implementation LiquidRescaleController
 
@@ -538,10 +541,60 @@ NSBitmapImageRep *mask_rep;
 
 #pragma mark -
 #pragma mark worker thread...
-void LqrProviderReleaseData (void *info,const void *data,size_t size)
+
+
+- (void) LqrInitData:(CGImageSourceRef)source;
 {
-	MLogString(1 ,@"");
-	free((void *)data);
+		// TODO: better interface ?
+		  // TODO: this part should be done on load ...
+		
+		  int             Bpr;
+		 // int             spp;
+		  int             w;
+		  int             h;
+		  const unsigned char  *pixels;
+#ifndef GNUSTEP
+			CGImageRef cgiref = CGImageSourceCreateImageAtIndex(source, 0, NULL);
+			w = CGImageGetWidth( cgiref );
+			h = CGImageGetHeight( cgiref );
+			Bpr = CGImageGetBytesPerRow(cgiref);
+			
+			MLogString(1 ,@"w: %d h: %d Bpp: %d, Bps: %d",w,h,CGImageGetBitsPerComponent(cgiref),CGImageGetBitsPerPixel(cgiref));
+			CFDataRef imageData = CGDataProviderCopyData( CGImageGetDataProvider( cgiref ));
+			pixels = (const unsigned char  *)CFDataGetBytePtr(imageData);
+#else
+			
+		  Bpr =[rep bytesPerRow];
+		  //spp =[rep samplesPerPixel];
+		  w =[rep pixelsWide];
+		  h =[rep pixelsHigh];
+		  pixels =[rep bitmapData];
+#endif
+		// TODO: use a progress window ?
+		  unsigned char* img_bits = (unsigned char*)malloc(w*h*3);
+		    int x,y;
+		  for (y=0; y<h; y++) {
+		       unsigned char *p = (unsigned char *)(pixels + Bpr*y);
+		       unsigned char* _imptr = img_bits + y * w * 3;
+		       for (x=0; x<w; x++/*,p+=spp*/) {
+				// maybe we should use the alpha plane here ...
+				_imptr[3*x] = p[3*x];
+				_imptr[3*x+1] =p[3*x+1];
+				_imptr[3*x+2] = p[3*x+2];
+		       }
+		   }
+
+		/* (I.1) swallow the buffer in a (minimal) LqrCarver object
+		  *       (arguments are width, height and number of colour channels) */
+		carver = lqr_carver_new_ext(img_bits, w, h, 3,LQR_COLDEPTH_8I); // LQR_COLDEPTH_16I
+
+		// TODO: is it needed ?
+		// Ask Lqr library to preserve our picture
+		lqr_carver_set_preserve_input_image(carver);
+		#ifndef GNUSTEP
+		// TODO: check CFRelease(pixels);
+		CFRelease(source);
+		#endif
 }
 
 - (void) lqrRescaling:(NSDictionary*)infos;
@@ -600,9 +653,10 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		  destBpr,destspp, [destImageRep hasAlpha] );
 #endif	
 	unsigned char *rgb;
+	unsigned short *rgbOut16=0;
 	int x,y;
 	lqr_carver_scan_reset(carver);
-	while (lqr_carver_scan(carver, &x, &y, &rgb)) {
+	while (lqr_carver_scan_ext(carver, &x, &y,(void**) &rgb)) {
 		unsigned char *q = (unsigned char *)(destpix + bytesPerRow*y);
 		q[destspp*x] = rgb[0]; // red
 		q[destspp*x+1] = rgb[1]; // green
@@ -1202,7 +1256,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	// process the files.
 	//      if ( [oPanel runModalForDirectory:nil file:nil types:fileTypes]
 	if ( [oPanel runModalForDirectory:nil file:nil types:nil]
-		 == NSOKButton )
+		== NSOKButton )
 	{
 		// Get an array containing the full filenames of all
 		// files and directories selected.
@@ -1212,168 +1266,123 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		int i;
 		
 		for(i=0;i<fileArrayCount;i++) {
-		NSString* fileName = [files objectAtIndex:i];
-		MLogString(1 ,@"%@",fileName);
-		
-		NSImage* image;
-		//CFDataRef bits;
-		NSString *text;
-#ifdef GNUSTEP
-		// create and configure a new Image
-		image =[[NSImage alloc] initWithContentsOfFile:fileName];
-		// create a meaning full info ...
-
-		//NSBitmapImageRep *rep =[image bestRepresentationForDevice:nil];
-		NSBitmapImageRep *rep = [NSBitmapImageRep imageRepWithData:[image TIFFRepresentation]];
-		NSMutableDictionary *exifDict =  [rep valueForProperty:@"NSImageEXIFData"];
-#else
-		
-		CGImageSourceRef source = CGImageSourceCreateWithURL((CFURLRef)[NSURL fileURLWithPath:fileName], NULL);
-		if(source != nil) {
-			NSDictionary* options = [NSDictionary dictionaryWithObjectsAndKeys:
-				(id)kCFBooleanTrue, (id)kCGImageSourceShouldCache,
-				(id)kCFBooleanTrue, (id)kCGImageSourceShouldAllowFloat,
-				NULL];
+			NSString* fileName = [files objectAtIndex:i];
+			MLogString(1 ,@"%@",fileName);
 			
-			// get Exif from source?
-			NSDictionary* properties =  (NSDictionary *)CGImageSourceCopyPropertiesAtIndex(source, 0, (CFDictionaryRef)options);
-			//NSLog(@"props: %@", [properties description]);
-			NSDictionary *exif = [properties objectForKey:(NSString *)kCGImagePropertyExifDictionary];
-			if(exif) { /* kCGImagePropertyIPTCDictionary kCGImagePropertyExifAuxDictionary */
-				NSString *focalLengthStr, *fNumberStr, *exposureTimeStr,*exposureBiasStr;
-				//MLogString(1 ,@"the exif data is: %@", [exif description]);
-				NSNumber *focalLengthObj = [exif objectForKey:(NSString *)kCGImagePropertyExifFocalLength];
-				if (focalLengthObj) {
-					focalLengthStr = [NSString stringWithFormat:@"%@mm", [focalLengthObj stringValue]];
-				} else
-					focalLengthStr = @"";
-				NSNumber *fNumberObj = [exif objectForKey:(NSString *)kCGImagePropertyExifFNumber];
-				if (fNumberObj) {
-					fNumberStr = [NSString stringWithFormat:@"F%@", [fNumberObj stringValue]];
-				} else
-					fNumberStr = @"";
-				NSNumber *exposureTimeObj = (NSNumber *)[exif objectForKey:(NSString *)kCGImagePropertyExifExposureTime];
-				if (exposureTimeObj) {
-					exposureTimeStr = [NSString stringWithFormat:@"1/%.0f", (1/[exposureTimeObj floatValue])];
-				} else
-					exposureTimeStr = @"";
-				NSNumber *exposureBiasObj = (NSNumber *)[exif objectForKey:@"ExposureBiasValue"];
-				if (exposureBiasObj) {
-					exposureBiasStr = [NSString stringWithFormat:@"Exposure Comp. : %+0.1f EV", [exposureBiasObj floatValue]];
-				} else 
-					exposureBiasStr = @"";
+			NSImage* image;
+			//CFDataRef bits;
+			NSString *text;
+#ifdef GNUSTEP
+			// create and configure a new Image
+			image =[[NSImage alloc] initWithContentsOfFile:fileName];
+			// create a meaning full info ...
+			
+			//NSBitmapImageRep *rep =[image bestRepresentationForDevice:nil];
+			NSBitmapImageRep *rep = [NSBitmapImageRep imageRepWithData:[image TIFFRepresentation]];
+			NSMutableDictionary *exifDict =  [rep valueForProperty:@"NSImageEXIFData"];
+#else
+			
+			CGImageSourceRef source = CGImageSourceCreateWithURL((CFURLRef)[NSURL fileURLWithPath:fileName], NULL);
+			if(source != nil) {
+				NSDictionary* options = [NSDictionary dictionaryWithObjectsAndKeys:
+										 (id)kCFBooleanTrue, (id)kCGImageSourceShouldCache,
+										 (id)kCFBooleanTrue, (id)kCGImageSourceShouldAllowFloat,
+										 NULL];
 				
-				text = [NSString stringWithFormat:@"%@\n%@ / %@ @ %@\n%@", [fileName lastPathComponent],
-					focalLengthStr,exposureTimeStr,fNumberStr,exposureBiasStr];
-				/* kCGImagePropertyExifFocalLength kCGImagePropertyExifRigidityTime kCGImagePropertyExifRigidityTime */
-			}  else {
+				// get Exif from source?
+				NSDictionary* properties =  (NSDictionary *)CGImageSourceCopyPropertiesAtIndex(source, 0, (CFDictionaryRef)options);
+				//NSLog(@"props: %@", [properties description]);
+				NSDictionary *exif = [properties objectForKey:(NSString *)kCGImagePropertyExifDictionary];
+				if(exif) { /* kCGImagePropertyIPTCDictionary kCGImagePropertyExifAuxDictionary */
+					NSString *focalLengthStr, *fNumberStr, *exposureTimeStr,*exposureBiasStr;
+					//MLogString(1 ,@"the exif data is: %@", [exif description]);
+					NSNumber *focalLengthObj = [exif objectForKey:(NSString *)kCGImagePropertyExifFocalLength];
+					if (focalLengthObj) {
+						focalLengthStr = [NSString stringWithFormat:@"%@mm", [focalLengthObj stringValue]];
+					} else
+						focalLengthStr = @"";
+					NSNumber *fNumberObj = [exif objectForKey:(NSString *)kCGImagePropertyExifFNumber];
+					if (fNumberObj) {
+						fNumberStr = [NSString stringWithFormat:@"F%@", [fNumberObj stringValue]];
+					} else
+						fNumberStr = @"";
+					NSNumber *exposureTimeObj = (NSNumber *)[exif objectForKey:(NSString *)kCGImagePropertyExifExposureTime];
+					if (exposureTimeObj) {
+						exposureTimeStr = [NSString stringWithFormat:@"1/%.0f", (1/[exposureTimeObj floatValue])];
+					} else
+						exposureTimeStr = @"";
+					NSNumber *exposureBiasObj = (NSNumber *)[exif objectForKey:@"ExposureBiasValue"];
+					if (exposureBiasObj) {
+						exposureBiasStr = [NSString stringWithFormat:@"Exposure Comp. : %+0.1f EV", [exposureBiasObj floatValue]];
+					} else 
+						exposureBiasStr = @"";
+					
+					text = [NSString stringWithFormat:@"%@\n%@ / %@ @ %@\n%@", [fileName lastPathComponent],
+							focalLengthStr,exposureTimeStr,fNumberStr,exposureBiasStr];
+					/* kCGImagePropertyExifFocalLength kCGImagePropertyExifRigidityTime kCGImagePropertyExifRigidityTime */
+				}  else {
+					text = [fileName lastPathComponent];
+				}
+				image = [self createThumbnail:source];
+				//bits = CGDataProviderCopyData(CGImageGetDataProvider(source));
+				//CFRelease(source);
+				CFRelease(properties);
+			} else {
 				text = [fileName lastPathComponent];
-			}
-			image = [self createThumbnail:source];
-			//bits = CGDataProviderCopyData(CGImageGetDataProvider(source));
-			//CFRelease(source);
-			CFRelease(properties);
-		} else {
-			text = [fileName lastPathComponent];
-		}        
+			}        
 #endif
 #ifdef GNUSTEP		
-		//NSLog(@"Exif Data in  %@", exifDict);
-		// TODO better with ImageIO
-		if (exifDict != nil) {
-			NSNumber *expo = [exifDict valueForKey:@"ExposureTime"];
-			NSString *speed;
-			if (expo)
-				speed = [NSString stringWithFormat:@"1/%.0f",ceil(1.0 / [expo doubleValue])];
-			else
-				speed = @"";
+			//NSLog(@"Exif Data in  %@", exifDict);
+			// TODO better with ImageIO
+			if (exifDict != nil) {
+				NSNumber *expo = [exifDict valueForKey:@"ExposureTime"];
+				NSString *speed;
+				if (expo)
+					speed = [NSString stringWithFormat:@"1/%.0f",ceil(1.0 / [expo doubleValue])];
+				else
+					speed = @"";
+				
+				text = [NSString stringWithFormat:@"%@\n%@ @ f/%@", [fileName lastPathComponent],
+						speed,[exifDict valueForKey:@"FNumber"]];
+			} else {
+				text = [fileName lastPathComponent];
+			}
+#endif
 			
-			text = [NSString stringWithFormat:@"%@\n%@ @ f/%@", [fileName lastPathComponent],
-				speed,[exifDict valueForKey:@"FNumber"]];
-		} else {
-			text = [fileName lastPathComponent];
-		}
-#endif
-		
-		NSData *thumbData = [image  TIFFRepresentation];
-		NSString *thumbname = [self previewfilename:[fileName lastPathComponent]];
-		[thumbData writeToFile:thumbname atomically:YES];
-		
-		NSNumber *enable = [NSNumber numberWithBool: YES];
-		// [NSString stringWithFormat: 
-		NSMutableDictionary *newImage = [NSMutableDictionary dictionaryWithObjectsAndKeys:enable,@"enable",fileName,@"file",text,@"text",image,@"thumb",thumbname,@"thumbfile",nil]; 
+			NSData *thumbData = [image  TIFFRepresentation];
+			NSString *thumbname = [self previewfilename:[fileName lastPathComponent]];
+			[thumbData writeToFile:thumbname atomically:YES];
+			
+			NSNumber *enable = [NSNumber numberWithBool: YES];
+			// [NSString stringWithFormat: 
+			NSMutableDictionary *newImage = [NSMutableDictionary dictionaryWithObjectsAndKeys:enable,@"enable",fileName,@"file",text,@"text",image,@"thumb",thumbname,@"thumbfile",nil]; 
 #ifdef GNUSTEP
-		[images addObject:newImage];
-		[mTableImage reloadData];
+			[images addObject:newImage];
+			[mTableImage reloadData];
         	//[mTableImage scrollRowToVisible:[mTableImage numberOfRows]-1];
-		
-
+			
+			
 #else
-		[mImageArrayCtrl addObject:newImage];
+			[mImageArrayCtrl addObject:newImage];
 #endif
-		//[self buildPreview];
-		_image = [[NSImage alloc] initWithContentsOfFile:fileName];//[image retain];
-		[self setupImageSize];
-		//[newImage release]; // memory bug ?
-		[_panelImageView reloadImage];
-
-		// TODO: better interface ?
-		  // TODO: this part should be done on load ...
-		
-		  int             Bpr;
-		 // int             spp;
-		  int             w;
-		  int             h;
-		  const unsigned char  *pixels;
+			//[self buildPreview];
+			_image = [[NSImage alloc] initWithContentsOfFile:fileName];//[image retain];
+			[self setupImageSize];
+			//[newImage release]; // memory bug ?
+			[_panelImageView reloadImage];
+			
 #ifndef GNUSTEP
 			CGImageRef cgiref = CGImageSourceCreateImageAtIndex(source, 0, NULL);
-			w = CGImageGetWidth( cgiref );
-			h = CGImageGetHeight( cgiref );
-			Bpr = CGImageGetBytesPerRow(cgiref);
 			
-			MLogString(1 ,@"w: %d h: %d Bpp: %d, Bps: %d",w,h,CGImageGetBitsPerComponent(cgiref),CGImageGetBitsPerPixel(cgiref));
-			CFDataRef imageData = CGDataProviderCopyData( CGImageGetDataProvider( cgiref ));
-			pixels = (const unsigned char  *)CFDataGetBytePtr(imageData);
 			// display it on dock !
-		        OverlayApplicationDockTileImage( cgiref);
-#else
-			
-		  Bpr =[rep bytesPerRow];
-		  //spp =[rep samplesPerPixel];
-		  w =[rep pixelsWide];
-		  h =[rep pixelsHigh];
-		  pixels =[rep bitmapData];
+			OverlayApplicationDockTileImage( cgiref);
 #endif
-		// TODO: use a progress window ?
-		  unsigned char* img_bits = (unsigned char*)malloc(w*h*3);
-		    int x,y;
-		  for (y=0; y<h; y++) {
-		       unsigned char *p = (unsigned char *)(pixels + Bpr*y);
-		       unsigned char* _imptr = img_bits + y * w * 3;
-		       for (x=0; x<w; x++/*,p+=spp*/) {
-				// maybe we should use the alpha plane here ...
-				_imptr[3*x] = p[3*x];
-				_imptr[3*x+1] =p[3*x+1];
-				_imptr[3*x+2] = p[3*x+2];
-		       }
-		   }
-
-		/* (I.1) swallow the buffer in a (minimal) LqrCarver object
-		  *       (arguments are width, height and number of colour channels) */
-		carver = lqr_carver_new(img_bits, w, h, 3);
-
-		// TODO: is it needed ?
-		// Ask Lqr library to preserve our picture
-		lqr_carver_set_preserve_input_image(carver);
-		#ifndef GNUSTEP
-		// TODO: check CFRelease(pixels);
-		CFRelease(source);
-		#endif
-	
-		[window setTitle:[fileName lastPathComponent] ];	
-		[window setTitle:text];
-
-		[_imageView setBeforeImage: _image];
+			
+			[self LqrInitData:source];
+			[window setTitle:[fileName lastPathComponent] ];	
+			[window setTitle:text];
+			
+			[_imageView setBeforeImage: _image];
 		}
 	}
 }
@@ -1602,7 +1611,6 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	
 	[_imageMask addRepresentation:destImageRep];
 	//[_imageMask setCacheMode: NSImageCacheNever];
-	mask_rep = destImageRep;
 	//MLogString(1 ,@"im : (%@)",[_imageMask representations]);
 	[_imageView setMaskImage:_imageMask];
 	}
