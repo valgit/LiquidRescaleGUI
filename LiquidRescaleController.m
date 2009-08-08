@@ -594,8 +594,8 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 			Bpr = CGImageGetBytesPerRow(cgiref);
 			spp =  CGImageGetBitsPerPixel(cgiref)/CGImageGetBitsPerComponent(cgiref);
 			
-			MLogString(1 ,@"w: %d h: %d Bpp: %d, Bps: %d , spp: %d",w,h,
-				CGImageGetBitsPerComponent(cgiref),CGImageGetBitsPerPixel(cgiref),spp);
+			MLogString(1 ,@"w: %d h: %d Bpp: %d, Bps: %d , spp: %d, Bprow: %d",w,h,
+				CGImageGetBitsPerComponent(cgiref),CGImageGetBitsPerPixel(cgiref),spp,Bpr);
 			CFDataRef imageData = CGDataProviderCopyData( CGImageGetDataProvider( cgiref ));
 			pixels = (const unsigned char  *)CFDataGetBytePtr(imageData);
 			datalen = w * h * 3 * (CGImageGetBitsPerComponent(cgiref)/8);
@@ -661,7 +661,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		   }
 
 #endif
-		tiff_dump(img_bits,w,h,bits, spp,"/tmp/test.tif");
+		//tiff_dump(img_bits,w,h,bits, spp,"/tmp/test.tif");
 		/* (I.1) swallow the buffer in a (minimal) LqrCarver object
 		  *       (arguments are width, height and number of colour channels) */
 		carver = lqr_carver_new_ext(img_bits, w, h, spp, coldepth);
@@ -760,7 +760,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		MLogString(1 ,@"unsupported bit depth : %d",bits);
 	}
 
-	tiff_dump(destpix,w,h,bits, destspp,"/tmp/test.tif");
+	//tiff_dump(destpix,w,h,bits, destspp,"/tmp/test.tif");
 	
 	NSBitmapImageRep *destImageRep;
 #ifndef GNUSTEP
@@ -772,18 +772,19 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
 		CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault | kCGImageAlphaNone;
 		CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
-		CGImageRef imageRef = CGImageCreate(w, h, bits, 
-			destspp*bits, 
-			bytesPerRow, colorSpaceRef, bitmapInfo,
-			provider, NULL, NO, renderingIntent);
+		_cgrescaleref = CGImageCreate(w, h, bits, 
+									  destspp*bits, 
+									  bytesPerRow, colorSpaceRef, bitmapInfo,
+									  provider, NULL, NO, renderingIntent);
 		//free (buffer); will be done by callback 
 		
 		// retain by quartz ...
 		CGDataProviderRelease(provider);
 		CGColorSpaceRelease(colorSpaceRef);
 		// only 10.5 here ...
-		destImageRep = [[[NSBitmapImageRep alloc] initWithCGImage:imageRef] autorelease];
-		CGImageRelease(imageRef);
+		destImageRep = [[[NSBitmapImageRep alloc] initWithCGImage:_cgrescaleref] autorelease];
+		// now keep for saving
+		//CGImageRelease(imageRef); //keep until ...
 	}
 #else	
 	// create a new representation without the alpha plane ...
@@ -1519,9 +1520,19 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	//NSData *photoData = [destImageRep representationUsingType:NSJPEGFileType properties:props];
 	// NSImageColorSyncProfileData
 #endif	
+
+#ifndef GNUSTEP
+		// TODO: check options
+		CGImageDestinationRef theImageSource = CGImageDestinationCreateWithURL((CFURLRef)[NSURL URLWithString:path], 
+				kUTTypeTIFF,1,0);
+		CGImageDestinationAddImage(theImageSource, _cgrescaleref, 0);
+		BOOL status = CGImageDestinationFinalize(theImageSource);
+
+#else
 		NSBitmapImageRep *rep = [NSBitmapImageRep imageRepWithData:[_rescaleImage TIFFRepresentation]];
 		NSData *photoData = [rep representationUsingType:NSTIFFFileType properties:NULL];
 		BOOL status = [photoData writeToFile:path atomically:YES];
+#endif
 		if(status)
                        NSRunInformationalAlertPanel(@"Write Complete.",
                                         @"save to %@ done",LS_OK,nil,nil,path);
