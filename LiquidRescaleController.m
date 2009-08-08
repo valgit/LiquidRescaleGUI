@@ -47,6 +47,38 @@ void libintl_dgettext()
 }
 #endif
 
+// dump to tiff for debug 
+#include "tiffio.h"
+void tiff_dump(unsigned char*data,int w,int h,int bps, int spp,char *filename) {
+  TIFF *output;
+
+  // Open the output image
+  if((output = TIFFOpen(filename, "w")) == NULL){
+    NSLog(@"%s Could not open outgoing image %s",filename);
+    return ;
+  }
+
+  // Write the tiff tags to the file
+  TIFFSetField(output, TIFFTAG_IMAGEWIDTH, w);
+  TIFFSetField(output, TIFFTAG_IMAGELENGTH, h);
+  TIFFSetField(output, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
+  TIFFSetField(output, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+  TIFFSetField(output, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+  TIFFSetField(output, TIFFTAG_BITSPERSAMPLE, bps);
+  TIFFSetField(output, TIFFTAG_SAMPLESPERPIXEL, spp);
+
+  int strip = TIFFDefaultStripSize(output, 0);
+  NSLog(@"%s dest strip : %d",__PRETTY_FUNCTION__,strip);
+  // Actually write the image
+  //if(TIFFWriteEncodedStrip(output, 0, img->bits_ptr(), img->width() * img->height() * 3) == 0){
+  if(TIFFWriteEncodedStrip(output, 0, data , w *h * spp * (bps /8)) == 0){
+    NSLog(@"%s Could not write image",__PRETTY_FUNCTION__);
+    return ;
+  }
+
+  TIFFClose(output);
+}
+
 #define LS_CANCEL NSLocalizedStringFromTable(@"Cancel",  @"cancel", "Button choice for cancel")
 #define LS_ERROR NSLocalizedStringFromTable(@"Error", @"error", @"title for error")
 #define LS_CONTINUE NSLocalizedStringFromTable(@"Continue", @"continue", @"Button choice for continue")
@@ -572,6 +604,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 			switch (bits) {
 			case 8 :  {
 				coldepth = LQR_COLDEPTH_8I;
+				
 				int x,y;
 				for (y=0; y<h; y++) {
 				       unsigned char *p = (unsigned char *)(pixels + Bpr*y);
@@ -587,10 +620,11 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 				break;
 			case 16 : {
 				coldepth = LQR_COLDEPTH_16I; // better way ?
+				
 				int x,y;
 				for (y=0; y<h; y++) {
 				       unsigned short *p = (unsigned short *)(pixels + Bpr*y);
-				       unsigned short* _imptr = img_bits + y * w * 3;
+				       unsigned short* _imptr = (unsigned short*)(img_bits + y * w * 6);
 				       for (x=0; x<w; x++/*,p+=spp*/) {
 					// maybe we should use the alpha plane here ...
 					_imptr[3*x] = p[3*x];
@@ -627,6 +661,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		   }
 
 #endif
+		tiff_dump(img_bits,w,h,bits, spp,"/tmp/test.tif");
 		/* (I.1) swallow the buffer in a (minimal) LqrCarver object
 		  *       (arguments are width, height and number of colour channels) */
 		carver = lqr_carver_new_ext(img_bits, w, h, spp, coldepth);
@@ -676,11 +711,12 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	//CIFormat format = kCIFormatARGB8; kCIFormatRGBA16
 
 	int bps = bits; // bit per sample ( 8 /16 ), get it from image !
-	int destspp = 4;
+	int destspp = 3;
     // no need on 10.4 void*   bitmapData = malloc(4*1024*768);
-	size_t bytesPerRow = (((w *(bps/ 8) * destspp)+ 0x0000000F) & ~0x0000000F); // 16 byte aligned is good
+	//size_t bytesPerRow = (((w *(bps/ 8) * destspp)+ 0x0000000F) & ~0x0000000F); // 16 byte aligned is good
+	size_t bytesPerRow = (w *(bps/ 8) * destspp);
 	MLogString(1 ,@"create context bps: %d, w: %d, bpr: %d",bps,width,bytesPerRow);
-	int datasize = h * bytesPerRow;
+	size_t datasize = h * bytesPerRow;
 
 	unsigned char *destpix = malloc( datasize );
 	if (destpix == 0) {
@@ -705,7 +741,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 			q[destspp*x] = rgb[0]; // red
 			q[destspp*x+1] = rgb[1]; // green
 			q[destspp*x+2] = rgb[2]; // blue
-			q[destspp*x+3] = 255; // alpha
+			//q[destspp*x+3] = 255; // alpha
 		}
 		}
 		break;
@@ -716,7 +752,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 			q[destspp*x] = rgbOut16[0]; // red
 			q[destspp*x+1] = rgbOut16[1]; // green
 			q[destspp*x+2] = rgbOut16[2]; // blue
-			q[destspp*x+3] = 255; // alpha
+			//q[destspp*x+3] = 65535; // alpha
 		}
 		}
 		break;
@@ -724,6 +760,8 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		MLogString(1 ,@"unsupported bit depth : %d",bits);
 	}
 
+	tiff_dump(destpix,w,h,bits, destspp,"/tmp/test.tif");
+	
 	NSBitmapImageRep *destImageRep;
 #ifndef GNUSTEP
 	// TODO: compilation !
@@ -732,19 +770,20 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	
 	if (provider != NULL) {
 		CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
-		CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault || kCGBitmapAlphaInfoMask;
+		CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault | kCGImageAlphaNone;
 		CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
-		CGImageRef imageRef = CGImageCreate(width, height, bits, 
+		CGImageRef imageRef = CGImageCreate(w, h, bits, 
 			destspp*bits, 
 			bytesPerRow, colorSpaceRef, bitmapInfo,
 			provider, NULL, NO, renderingIntent);
-		//free (buffer); will be done by callback !
+		//free (buffer); will be done by callback 
+		
 		// retain by quartz ...
 		CGDataProviderRelease(provider);
 		CGColorSpaceRelease(colorSpaceRef);
 		// only 10.5 here ...
 		destImageRep = [[[NSBitmapImageRep alloc] initWithCGImage:imageRef] autorelease];
-		
+		CGImageRelease(imageRef);
 	}
 #else	
 	// create a new representation without the alpha plane ...
