@@ -770,7 +770,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	
 	if (provider != NULL) {
 		CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
-		CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault | kCGImageAlphaNone;
+		CGBitmapInfo bitmapInfo = kCGBitmapByteOrder16Little; // kCGBitmapByteOrderDefault | kCGImageAlphaNone;
 		CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
 		_cgrescaleref = CGImageCreate(w, h, bits, 
 									  destspp*bits, 
