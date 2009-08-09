@@ -575,104 +575,104 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 #pragma mark worker thread...
 
 
-- (void) LqrInitData:(CGImageSourceRef)source;
+- (void) LqrInitData:(CGImageRef)cgiref;
 {
-		// TODO: better interface ?
-		  // TODO: this part should be done on load ...
-		
-		  int             Bpr;
-		  int             spp;
-		  int             w;
-		  int             h;
-		  const unsigned char  *pixels;
-		  size_t datalen = 0;
-		  LqrColDepth  coldepth = LQR_COLDEPTH_8I;
+	// TODO: better interface ?
+	// TODO: this part should be done on load ...
+	
+	int             Bpr;
+	int             spp;
+	int             w;
+	int             h;
+	const unsigned char  *pixels;
+	size_t datalen = 0;
+	LqrColDepth  coldepth = LQR_COLDEPTH_8I;
 #ifndef GNUSTEP
-			CGImageRef cgiref = CGImageSourceCreateImageAtIndex(source, 0, NULL);
-			w = CGImageGetWidth( cgiref );
-			h = CGImageGetHeight( cgiref );
-			Bpr = CGImageGetBytesPerRow(cgiref);
-			spp =  CGImageGetBitsPerPixel(cgiref)/CGImageGetBitsPerComponent(cgiref);
+	//CGImageRef cgiref = CGImageSourceCreateImageAtIndex(source, 0, NULL);
+	w = CGImageGetWidth( cgiref );
+	h = CGImageGetHeight( cgiref );
+	Bpr = CGImageGetBytesPerRow(cgiref);
+	spp =  CGImageGetBitsPerPixel(cgiref)/CGImageGetBitsPerComponent(cgiref);
+	
+	MLogString(1 ,@"w: %d h: %d Bpp: %d, Bps: %d , spp: %d, Bprow: %d",w,h,
+			   CGImageGetBitsPerComponent(cgiref),CGImageGetBitsPerPixel(cgiref),spp,Bpr);
+	CFDataRef imageData = CGDataProviderCopyData( CGImageGetDataProvider( cgiref ));
+	pixels = (const unsigned char  *)CFDataGetBytePtr(imageData);
+	datalen = w * h * 3 * (CGImageGetBitsPerComponent(cgiref)/8);
+	unsigned char* img_bits = (unsigned char*)malloc(datalen);
+	bits = CGImageGetBitsPerComponent(cgiref);
+	switch (bits) {
+		case 8 :  {
+			coldepth = LQR_COLDEPTH_8I;
 			
-			MLogString(1 ,@"w: %d h: %d Bpp: %d, Bps: %d , spp: %d, Bprow: %d",w,h,
-				CGImageGetBitsPerComponent(cgiref),CGImageGetBitsPerPixel(cgiref),spp,Bpr);
-			CFDataRef imageData = CGDataProviderCopyData( CGImageGetDataProvider( cgiref ));
-			pixels = (const unsigned char  *)CFDataGetBytePtr(imageData);
-			datalen = w * h * 3 * (CGImageGetBitsPerComponent(cgiref)/8);
-			unsigned char* img_bits = (unsigned char*)malloc(datalen);
-			bits = CGImageGetBitsPerComponent(cgiref);
-			switch (bits) {
-			case 8 :  {
-				coldepth = LQR_COLDEPTH_8I;
-				
-				int x,y;
-				for (y=0; y<h; y++) {
-				       unsigned char *p = (unsigned char *)(pixels + Bpr*y);
-				       unsigned char* _imptr = img_bits + y * w * 3;
-				       for (x=0; x<w; x++/*,p+=spp*/) {
+			int x,y;
+			for (y=0; y<h; y++) {
+				unsigned char *p = (unsigned char *)(pixels + Bpr*y);
+				unsigned char* _imptr = img_bits + y * w * 3;
+				for (x=0; x<w; x++/*,p+=spp*/) {
 					// maybe we should use the alpha plane here ...
 					_imptr[3*x] = p[3*x];
 					_imptr[3*x+1] =p[3*x+1];
 					_imptr[3*x+2] = p[3*x+2];
-				       }
-				   }
 				}
-				break;
-			case 16 : {
-				coldepth = LQR_COLDEPTH_16I; // better way ?
-				
-				int x,y;
-				for (y=0; y<h; y++) {
-				       unsigned short *p = (unsigned short *)(pixels + Bpr*y);
-				       unsigned short* _imptr = (unsigned short*)(img_bits + y * w * 6);
-				       for (x=0; x<w; x++/*,p+=spp*/) {
-					// maybe we should use the alpha plane here ...
-					_imptr[3*x] = p[3*x];
-					_imptr[3*x+1] =p[3*x+1];
-					_imptr[3*x+2] = p[3*x+2];
-				       }
-				   }
-				}
-				break;
-			default :
-				MLogString(1 ,@"unsupported bpp :%d !",CGImageGetBitsPerComponent(cgiref));
 			}
-
-#else
+		}
+			break;
+		case 16 : {
+			coldepth = LQR_COLDEPTH_16I; // better way ?
 			
-		  Bpr =[rep bytesPerRow];
-		  spp =[rep samplesPerPixel];
-		  w =[rep pixelsWide];
-		  h =[rep pixelsHigh];
-		  pixels =[rep bitmapData];
-
-		  datalen = w * Bpr;
-		  unsigned char* img_bits = (unsigned char*)malloc(datalen);
-		    int x,y;
-		  for (y=0; y<h; y++) {
-		       unsigned char *p = (unsigned char *)(pixels + Bpr*y);
-		       unsigned char* _imptr = img_bits + y * w * 3;
-		       for (x=0; x<w; x++/*,p+=spp*/) {
-				// maybe we should use the alpha plane here ...
-				_imptr[3*x] = p[3*x];
-				_imptr[3*x+1] =p[3*x+1];
-				_imptr[3*x+2] = p[3*x+2];
-		       }
-		   }
-
+			int x,y;
+			for (y=0; y<h; y++) {
+				unsigned short *p = (unsigned short *)(pixels + Bpr*y);
+				unsigned short* _imptr = (unsigned short*)(img_bits + y * w * 6);
+				for (x=0; x<w; x++/*,p+=spp*/) {
+					// maybe we should use the alpha plane here ...
+					_imptr[3*x] = p[3*x];
+					_imptr[3*x+1] =p[3*x+1];
+					_imptr[3*x+2] = p[3*x+2];
+				}
+			}
+		}
+			break;
+		default :
+			MLogString(1 ,@"unsupported bpp :%d !",CGImageGetBitsPerComponent(cgiref));
+	}
+	
+#else
+	
+	Bpr =[rep bytesPerRow];
+	spp =[rep samplesPerPixel];
+	w =[rep pixelsWide];
+	h =[rep pixelsHigh];
+	pixels =[rep bitmapData];
+	
+	datalen = w * Bpr;
+	unsigned char* img_bits = (unsigned char*)malloc(datalen);
+	int x,y;
+	for (y=0; y<h; y++) {
+		unsigned char *p = (unsigned char *)(pixels + Bpr*y);
+		unsigned char* _imptr = img_bits + y * w * 3;
+		for (x=0; x<w; x++/*,p+=spp*/) {
+			// maybe we should use the alpha plane here ...
+			_imptr[3*x] = p[3*x];
+			_imptr[3*x+1] =p[3*x+1];
+			_imptr[3*x+2] = p[3*x+2];
+		}
+	}
+	
 #endif
-		//tiff_dump(img_bits,w,h,bits, spp,"/tmp/test.tif");
-		/* (I.1) swallow the buffer in a (minimal) LqrCarver object
-		  *       (arguments are width, height and number of colour channels) */
-		carver = lqr_carver_new_ext(img_bits, w, h, spp, coldepth);
-
-		// TODO: is it needed ?
-		// Ask Lqr library to preserve our picture
-		// not needed lqr_carver_set_preserve_input_image(carver);
-		#ifndef GNUSTEP
-		// TODO: check CFRelease(pixels);
-		CFRelease(source);
-		#endif
+	//tiff_dump(img_bits,w,h,bits, spp,"/tmp/test.tif");
+	/* (I.1) swallow the buffer in a (minimal) LqrCarver object
+	 *       (arguments are width, height and number of colour channels) */
+	carver = lqr_carver_new_ext(img_bits, w, h, spp, coldepth);
+	
+	// TODO: is it needed ?
+	// Ask Lqr library to preserve our picture
+	// not needed lqr_carver_set_preserve_input_image(carver);
+#ifndef GNUSTEP
+	// TODO: check CFRelease(pixels);
+	//CFRelease(source);
+#endif
 }
 
 - (void) lqrRescaling:(NSDictionary*)infos;
@@ -777,6 +777,12 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 									  bytesPerRow, colorSpaceRef, bitmapInfo,
 									  provider, NULL, NO, renderingIntent);
 		//free (buffer); will be done by callback 
+	#if 0	
+		CGImageDestinationRef theImageSource = CGImageDestinationCreateWithURL((CFURLRef)[NSURL fileURLWithPath:@"/tmp/io.tiff"], 
+				kUTTypeTIFF,1,0);
+		CGImageDestinationAddImage(theImageSource, _cgrescaleref, 0);
+		BOOL status = CGImageDestinationFinalize(theImageSource);
+	#endif
 		
 		// retain by quartz ...
 		CGDataProviderRelease(provider);
@@ -1474,12 +1480,13 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 			
 #ifndef GNUSTEP
 			CGImageRef cgiref = CGImageSourceCreateImageAtIndex(source, 0, NULL);
-			
+			_cgimageref = cgiref;
 			// display it on dock !
 			OverlayApplicationDockTileImage( cgiref);
+			CFRelease(source);
 #endif
 			
-			[self LqrInitData:source];
+			[self LqrInitData:_cgimageref];
 			[window setTitle:[fileName lastPathComponent] ];	
 			[window setTitle:text];
 			
@@ -1491,6 +1498,40 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 
 #pragma mark -
 #pragma mark TODO
+
+-(void)saveJPEGImage:(CGImageRef)imageRef path:(NSString *)path {
+	CFMutableDictionaryRef mSaveMetaAndOpts = CFDictionaryCreateMutable(nil, 0,
+											&kCFTypeDictionaryKeyCallBacks,  &kCFTypeDictionaryValueCallBacks);
+	CFDictionarySetValue(mSaveMetaAndOpts, kCGImageDestinationLossyCompressionQuality, 
+						 [NSNumber numberWithFloat:1.0]);	// set the compression quality here
+	NSURL *outURL = [[NSURL alloc] initFileURLWithPath:path];
+	CGImageDestinationRef dr = CGImageDestinationCreateWithURL ((CFURLRef)outURL, kUTTypeJPEG , 1, NULL);
+	CGImageDestinationAddImage(dr, imageRef, mSaveMetaAndOpts);
+	CGImageDestinationFinalize(dr);
+}
+ 
+ 
+-(void)savePNGImage:(CGImageRef)imageRef path:(NSString *)path {
+	NSURL *outURL = [[NSURL alloc] initFileURLWithPath:path]; 
+	CGImageDestinationRef dr = CGImageDestinationCreateWithURL ((CFURLRef)outURL, kUTTypePNG , 1, NULL);
+	CGImageDestinationAddImage(dr, imageRef, NULL);
+	CGImageDestinationFinalize(dr);
+}
+ 
+-(void)saveTIFFImage:(CGImageRef)imageRef path:(NSString *)path {
+	int compression = NSTIFFCompressionLZW;  // non-lossy LZW compression
+	CFMutableDictionaryRef mSaveMetaAndOpts = CFDictionaryCreateMutable(nil, 0,
+																		&kCFTypeDictionaryKeyCallBacks,  &kCFTypeDictionaryValueCallBacks);
+	CFMutableDictionaryRef tiffProfsMut = CFDictionaryCreateMutable(nil, 0,
+																	&kCFTypeDictionaryKeyCallBacks,  &kCFTypeDictionaryValueCallBacks);
+	CFDictionarySetValue(tiffProfsMut, kCGImagePropertyTIFFCompression, CFNumberCreate(NULL, kCFNumberIntType, &compression));	
+	CFDictionarySetValue(mSaveMetaAndOpts, kCGImagePropertyTIFFDictionary, tiffProfsMut);
+ 
+	NSURL *outURL = [[NSURL alloc] initFileURLWithPath:path];
+	CGImageDestinationRef dr = CGImageDestinationCreateWithURL ((CFURLRef)outURL, kUTTypeTIFF , 1, NULL);
+	CGImageDestinationAddImage(dr, imageRef, mSaveMetaAndOpts);
+	CGImageDestinationFinalize(dr);
+}
 
 - (void)saveAsPanelDidEnd:(NSSavePanel *)savePanel
                   returnCode:(int)returnCode
@@ -1521,18 +1562,28 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	// NSImageColorSyncProfileData
 #endif	
 
+	BOOL status = NO;
+	
 #ifndef GNUSTEP
 		// TODO: check options
-		CGImageDestinationRef theImageSource = CGImageDestinationCreateWithURL((CFURLRef)[NSURL URLWithString:path], 
-				kUTTypeTIFF,1,0);
+		CGImageDestinationRef theImageSource = CGImageDestinationCreateWithURL((CFURLRef)[NSURL fileURLWithPath:path], 
+				kUTTypeTIFF, // type
+				1, // count
+				0); // option
+		if (theImageSource == nil) {
+			status = NO;
+			goto bail;
+		}
+			
 		CGImageDestinationAddImage(theImageSource, _cgrescaleref, 0);
-		BOOL status = CGImageDestinationFinalize(theImageSource);
-
+		status = CGImageDestinationFinalize(theImageSource);
+		CFRelease(theImageSource);
 #else
 		NSBitmapImageRep *rep = [NSBitmapImageRep imageRepWithData:[_rescaleImage TIFFRepresentation]];
 		NSData *photoData = [rep representationUsingType:NSTIFFFileType properties:NULL];
-		BOOL status = [photoData writeToFile:path atomically:YES];
+		status = [photoData writeToFile:path atomically:YES];
 #endif
+bail:
 		if(status)
                        NSRunInformationalAlertPanel(@"Write Complete.",
                                         @"save to %@ done",LS_OK,nil,nil,path);

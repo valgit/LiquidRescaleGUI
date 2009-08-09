@@ -97,6 +97,7 @@
 
     double _zoomfactor;
     NSImage* _image;
+	CGImageRef _cgimageref;
     NSImage* _rescaleImage;
 	CGImageRef _cgrescaleref;
     int bits;
