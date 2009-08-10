@@ -621,6 +621,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		case 16 : {
 			coldepth = LQR_COLDEPTH_16I; // better way ?
 			
+			#if 0
 			int x,y;
 			for (y=0; y<h; y++) {
 				unsigned short *p = (unsigned short *)(pixels + Bpr*y);
@@ -632,6 +633,11 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 					_imptr[3*x+2] = p[3*x+2];
 				}
 			}
+			#else
+			// TODO: better check
+			free(img_bits);
+			img_bits = pixels;
+			#endif
 		}
 			break;
 		default :
@@ -770,7 +776,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	
 	if (provider != NULL) {
 		CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
-		CGBitmapInfo bitmapInfo = kCGBitmapByteOrder16Little; // kCGBitmapByteOrderDefault | kCGImageAlphaNone;
+		CGBitmapInfo bitmapInfo = kCGBitmapByteOrder16Little; // by D. Duncan kCGBitmapByteOrderDefault | kCGImageAlphaNone;
 		CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
 		_cgrescaleref = CGImageCreate(w, h, bits, 
 									  destspp*bits, 
