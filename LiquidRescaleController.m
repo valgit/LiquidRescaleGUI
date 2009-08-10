@@ -596,6 +596,9 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	
 	MLogString(1 ,@"w: %d h: %d Bpp: %d, Bps: %d , spp: %d, Bprow: %d",w,h,
 			   CGImageGetBitsPerComponent(cgiref),CGImageGetBitsPerPixel(cgiref),spp,Bpr);
+	if ( Bpr != (w * h * 3 * (CGImageGetBitsPerComponent(cgiref)/8)))
+		MLogString(1 ,@"is not byte align !");
+
 	CFDataRef imageData = CGDataProviderCopyData( CGImageGetDataProvider( cgiref ));
 	pixels = (const unsigned char  *)CFDataGetBytePtr(imageData);
 	datalen = w * h * 3 * (CGImageGetBitsPerComponent(cgiref)/8);
@@ -604,7 +607,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	switch (bits) {
 		case 8 :  {
 			coldepth = LQR_COLDEPTH_8I;
-			
+#if 1		
 			int x,y;
 			for (y=0; y<h; y++) {
 				unsigned char *p = (unsigned char *)(pixels + Bpr*y);
@@ -616,6 +619,12 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 					_imptr[3*x+2] = p[3*x+2];
 				}
 			}
+#else
+			// TODO: better check
+			free(img_bits);
+			img_bits = pixels;
+#endif
+			
 		}
 			break;
 		case 16 : {
@@ -667,7 +676,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	}
 	
 #endif
-	//tiff_dump(img_bits,w,h,bits, spp,"/tmp/test.tif");
+	tiff_dump(img_bits,w,h,bits, spp,"/tmp/test.tif");
 	/* (I.1) swallow the buffer in a (minimal) LqrCarver object
 	 *       (arguments are width, height and number of colour channels) */
 	carver = lqr_carver_new_ext(img_bits, w, h, spp, coldepth);
@@ -740,6 +749,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	unsigned char *rgb;
 	int x,y;
 	lqr_carver_scan_reset(carver);
+	MLogString(1 ,@"bpp: %d",lqr_carver_get_col_depth(carver));
 	switch (bits) {
 	case 8 : {
 		while (lqr_carver_scan_ext(carver, &x, &y,(void**) &rgb)) {
@@ -1866,6 +1876,11 @@ bail:
 {
 	MLogString(1 ,@"value : %f",[sender floatValue]);
 	[self setZoomFactor:[sender floatValue]];
+
+	double percent = 100.0 / [self zoomFactor] ;
+        NSSize viewsize = [_imageView frame].size;
+        [_panelImageView setSelSize:NSMakeSize(viewsize.width*percent,viewsize.height*percent)];
+	[_imageView setMagnification:percent];
 }
 
 #pragma mark <AppDataSource>
@@ -1888,8 +1903,7 @@ bail:
 - (void) imagePanelViewSelectionDidChange:(NSView*)imageView;
 {
         NSPoint anchor = [(ImagePanelView*)imageView anchor];
-        NSLog(@"%s new sel : %f %f",__PRETTY_FUNCTION__,anchor.x,anchor.y);
-
+#if 0
         // get the crop
         double percent = 100.0 / [self zoomFactor];
         NSSize viewsize = [_imageView frame].size;
@@ -1897,13 +1911,16 @@ bail:
                 anchor.x,anchor.y,
                 viewsize.width*percent,viewsize.height*percent);
 		// not needed anymore...
+        NSLog(@"%s new anchor sel : %f %f",__PRETTY_FUNCTION__,anchor.x,anchor.y);
+        NSLog(@"%s new size sel : %f %f",__PRETTY_FUNCTION__,selrect.size.width,selrect.size.height);
         //NSImage* imgcrop = [_image imageFromRect:selrect];
         //[_imageView setImageScaling:NSScaleProportionally];
         // testing : [_imageView setBeforeImage: imgcrop];
         //[_imageView setBeforeImage: _image];
+#endif
 	[_imageView setSelectionRectOrigin:anchor];
         //[imgcrop release];
-		#if 0
+#if 0
 	if (_rescaleImage) {
 		NSLog(@"%s need to set after image",__PRETTY_FUNCTION__);
 	}
@@ -1912,7 +1929,7 @@ bail:
 		//NSImage* imgcrop = [_imageMask imageFromRect:selrect];
 		//[_imageView setMaskImage: imgcrop];
 	}
-	#endif
+#endif
 }
 
 #pragma mark Display

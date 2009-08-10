@@ -17,6 +17,7 @@
 
 	BOOL _displayAfter;
 	NSRect _selectionRect;
+	double _zoom;
 }
 
 - (id)initWithFrame:(NSRect)frame;
@@ -37,6 +38,8 @@
 - (id) delegate;
 
 - (void) setSelectionRectOrigin:(NSPoint)origin;
+- (double)magnification;
+- (void)setMagnification:(double)zoom;
 
 @end
 

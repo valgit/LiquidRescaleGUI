@@ -42,7 +42,7 @@
 - (void)reloadImage;
 {
 	[self selectionDidChange];
-	[self setNeedsDisplay:YES];
+	//done in DidChange ! [self setNeedsDisplay:YES];
 }
 
 - (void)drawRect:(NSRect)rect;
@@ -124,7 +124,7 @@
 		[self setImageScale:NSMakeSize(1.0,1.0)];
 #endif
 	[self selectionDidChange];
-	[self setNeedsDisplay: YES];
+	//done in DidChange ! [self setNeedsDisplay: YES];
 }
 
 - (void)setImageScale:(NSSize)size;

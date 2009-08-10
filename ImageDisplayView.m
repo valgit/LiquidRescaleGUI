@@ -17,6 +17,7 @@
 	_afterImage = nil;
 	_maskImage = nil;
 	_selectionRect = NSMakeRect(0,0,frame.size.width,frame.size.height);
+	_zoom = 100;
    }
    return self;
 }
@@ -44,6 +45,16 @@
 	_selectionRect.origin.x = origin.x;
 	_selectionRect.origin.y = origin.y;
 	[self setNeedsDisplay:YES];
+}
+
+- (double)magnification;
+{
+	return _zoom;
+}
+
+- (void)setMagnification:(double)zoom;
+{
+	_zoom = zoom;
 }
 
 - (void) setBeforeImage:(NSImage*)image
@@ -143,10 +154,10 @@
         [[NSGraphicsContext currentContext] setImageInterpolation: NSImageInterpolationHigh];
 		//[_image setCacheMode: NSImageCacheNever];
         
-        NSSize viewSize  = [self bounds].size;
+        NSSize viewSize  = bounds.size;
         NSSize imageSize = [_image size];
 		//double imageScale = viewSize.width/thumbsize.width;
-		//NSLog(@"%s scale (%f,%f)",__PRETTY_FUNCTION__,imageScale);
+	NSLog(@"%s scale (%f,%f)",__PRETTY_FUNCTION__,viewSize.width,viewSize.width * _zoom);
 		//    NSAffineTransform* at = [NSAffineTransform transform];
         //[at scaleBy:imageScale];
         //needed ? imageSize = [at transformSize:imageSize];
@@ -172,8 +183,8 @@
 		 imageSize.width,imageSize.height);
 		 */
         [_image drawInRect:destRect
-				  fromRect:NSMakeRect(_selectionRect.origin.x,_selectionRect.origin.y,
-									  imageSize.width,imageSize.height)
+			  fromRect:NSMakeRect(_selectionRect.origin.x,_selectionRect.origin.y,
+						  imageSize.width * _zoom,imageSize.height * _zoom)
 				 operation:NSCompositeSourceOver
 				  fraction:1.0];
 		
