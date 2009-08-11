@@ -676,7 +676,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	}
 	
 #endif
-	tiff_dump(img_bits,w,h,bits, spp,"/tmp/test.tif");
+	//tiff_dump(img_bits,w,h,bits, spp,"/tmp/test.tif");
 	/* (I.1) swallow the buffer in a (minimal) LqrCarver object
 	 *       (arguments are width, height and number of colour channels) */
 	carver = lqr_carver_new_ext(img_bits, w, h, spp, coldepth);
@@ -809,7 +809,9 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 		CGDataProviderRelease(provider);
 		CGColorSpaceRelease(colorSpaceRef);
 		// only 10.5 here ...
+		#if defined(MAC_OS_X_VERSION_10_5) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
 		destImageRep = [[[NSBitmapImageRep alloc] initWithCGImage:_cgrescaleref] autorelease];
+		#endif
 		// now keep for saving
 		//CGImageRelease(imageRef); //keep until ...
 	}
@@ -827,10 +829,16 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 					   bytesPerRow:bytesPerRow // (spp*width) 
 					   bitsPerPixel:32 ] autorelease]; 
 #endif
-	
-	NSImage *image = [[NSImage alloc] initWithSize:[destImageRep size]];
-	[image addRepresentation:destImageRep];
 
+	NSImage *image;
+	
+	#if defined(MAC_OS_X_VERSION_10_4) && MAC_OS_X_VERSION_MAX_ALLOWED == MAC_OS_X_VERSION_10_4
+	image = [[NSImage gt_imageWithCGImage:_cgrescaleref] retain];
+	#else
+	image = [[NSImage alloc] initWithSize:[destImageRep size]];
+	[image addRepresentation:destImageRep];
+	#endif
+	
 	//[destImageRep release];	
 	[_rescaleImage release];
 	_rescaleImage = image;
@@ -1512,6 +1520,12 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 			[window setTitle:text];
 			
 			[_imageView setBeforeImage: _image];
+			// set zoom to fit in window
+			NSSize viewsize = [_imageView frame].size;
+			double full = (CGImageGetWidth(_cgimageref)/viewsize.width)*100.0;
+			MLogString(1 ,@"scaling to : %f",full);
+			[_zoomSlider setDoubleValue:full]; 
+			[_zoomSlider performClick:_zoomSlider];
 		}
 	}
 }
