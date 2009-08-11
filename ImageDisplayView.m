@@ -194,10 +194,17 @@
 			//imageSize.width,imageSize.height);
 			[_maskImage drawInRect:destRect
 						  fromRect:NSMakeRect(_selectionRect.origin.x,_selectionRect.origin.y,
-											  imageSize.width,imageSize.height)
+											  imageSize.width * _zoom,imageSize.height * _zoom)
 						 operation:NSCompositeSourceAtop//NSCompositeSourceOver
 						  fraction:1.0];
 		}
+		
+		// draw some frame
+		NSBezierPath * path = [NSBezierPath bezierPathWithRect:destRect]; 
+		[path setLineWidth:3]; 
+		[[NSColor whiteColor] set];
+		[path stroke]; 
+	
 	}
 }
 

@@ -1549,7 +1549,7 @@
 								<string key="NSContents"/>
 								<reference key="NSSupport" ref="22"/>
 								<reference key="NSControlView" ref="1052443540"/>
-								<double key="NSMaxValue">1.000000e+02</double>
+								<double key="NSMaxValue">4.000000e+02</double>
 								<double key="NSMinValue">0.000000e+00</double>
 								<double key="NSValue">5.000000e+01</double>
 								<double key="NSAltIncValue">0.000000e+00</double>

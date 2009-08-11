@@ -595,6 +595,13 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	Bpr = CGImageGetBytesPerRow(cgiref);
 	spp =  CGImageGetBitsPerPixel(cgiref)/CGImageGetBitsPerComponent(cgiref);
 	
+	if (spp !=3) {
+		  NSRunCriticalAlertPanel ([[NSProcessInfo processInfo] processName],
+			NSLocalizedString(@"Unsupported channelnumber",@""), 
+			LS_OK, NULL, NULL);
+		return ;
+	}
+		
 	MLogString(1 ,@"w: %d h: %d Bpp: %d, Bps: %d , spp: %d, Bprow: %d",w,h,
 			   CGImageGetBitsPerComponent(cgiref),CGImageGetBitsPerPixel(cgiref),spp,Bpr);
 	if ( Bpr != (w * h * 3 * (CGImageGetBitsPerComponent(cgiref)/8)))
