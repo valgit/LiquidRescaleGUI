@@ -97,9 +97,11 @@
 
     double _zoomfactor;
     NSImage* _image;
-	CGImageRef _cgimageref;
     NSImage* _rescaleImage;
+#ifndef GNUSTEP
+	CGImageRef _cgimageref;
 	CGImageRef _cgrescaleref;
+#endif
     int bits;
 
     NSImage* _imageMask;

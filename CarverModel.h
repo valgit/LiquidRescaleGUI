@@ -22,7 +22,12 @@
 }
 
 - (id) initWithUrl:(NSURL *)url;
+
+- (id) initWithCGImage:(CGImageRef)cgiref;
 - (void)dealloc;
 
-- (BOOL)render;
+- (NSImage*) getOuputCGImage;
+
+@end
+
 

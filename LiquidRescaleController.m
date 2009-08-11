@@ -575,6 +575,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 #pragma mark worker thread...
 
 
+#ifndef GNUSTEP
 - (void) LqrInitData:(CGImageRef)cgiref;
 {
 	// TODO: better interface ?
@@ -689,6 +690,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	//CFRelease(source);
 #endif
 }
+#endif
 
 - (void) lqrRescaling:(NSDictionary*)infos;
 {
@@ -1513,9 +1515,9 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 			// display it on dock !
 			OverlayApplicationDockTileImage( cgiref);
 			CFRelease(source);
-#endif
 			
 			[self LqrInitData:_cgimageref];
+#endif
 			[window setTitle:[fileName lastPathComponent] ];	
 			[window setTitle:text];
 			
@@ -1534,6 +1536,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 #pragma mark -
 #pragma mark TODO
 
+#ifndef GNUSTEP
 -(void)saveJPEGImage:(CGImageRef)imageRef path:(NSString *)path {
 	CFMutableDictionaryRef mSaveMetaAndOpts = CFDictionaryCreateMutable(nil, 0,
 											&kCFTypeDictionaryKeyCallBacks,  &kCFTypeDictionaryValueCallBacks);
@@ -1567,6 +1570,7 @@ void LqrProviderReleaseData (void *info,const void *data,size_t size)
 	CGImageDestinationAddImage(dr, imageRef, mSaveMetaAndOpts);
 	CGImageDestinationFinalize(dr);
 }
+#endif
 
 - (void)saveAsPanelDidEnd:(NSSavePanel *)savePanel
                   returnCode:(int)returnCode
@@ -2044,6 +2048,11 @@ bail:
 	//MLogString(1 ,@"");
 	if (_imageMask != nil ) {
 		NSPoint loc = [view convertPoint:[event locationInWindow] fromView:nil];
+		if (([event modifierFlags] & NSAlternateKeyMask) != 0 ) {
+			MLogString(1 ,@"panning");
+			[_imageView setSelectionRectOrigin:loc];
+			return ;
+		}
 		if ([event type] == NSTabletPoint || [event subtype] == NSTabletPointEventSubtype) {
 			double pressure = [event pressure];	
 			//NSLog(@"%s loc sel : %f %f",__PRETTY_FUNCTION__,loc.x,loc.y);
