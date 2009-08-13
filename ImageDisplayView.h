@@ -18,6 +18,7 @@
 	BOOL _displayAfter;
 	NSRect _selectionRect;
 	double _zoom;
+	NSPoint _grabOrigin;
 }
 
 - (id)initWithFrame:(NSRect)frame;
